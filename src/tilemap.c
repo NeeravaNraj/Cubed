@@ -5,12 +5,15 @@
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/hashmap.h"
+#include "inc/tiles.h"
 
 Vector2 NEIGHBOUR_OFFSETS[9] = {
     {.x = -1, .y = -1}, {.x = 0, .y = -1}, {.x = 1, .y = -1},
     {.x = -1, .y = 0}, {.x = 0, .y = 0}, {.x = 1, .y = 0},
     {.x = -1, .y = 1}, {.x = 0, .y = 1}, {.x = 1, .y = 1},
 };
+
+Vector2 TILE_SIZEV = { .x = TILE_SIZE, .y = TILE_SIZE };
 
 void tilemap_init(Tilemap* tm) {
     hashmap_init(&tm->map);
@@ -38,4 +41,14 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
     tm->around[counter] = NULL;
 
     return tm->around;
+}
+
+void tilemap_render(Tilemap* tm) {
+    Entry* tile_entry;
+    HashMapIterator it;
+    hashmap_init_iterator(&it, &tm->map);
+    while ((tile_entry = hashmap_next_entry(&it))) {
+        Tile* tile = tile_entry->value;
+        render_tile(tile);
+    }
 }

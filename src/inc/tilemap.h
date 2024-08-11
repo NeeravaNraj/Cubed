@@ -9,5 +9,7 @@
 typedef struct Tilemap {
     HashMap map;
     Tile** around;
+
+    void (*render)();
 } Tilemap;
 #endif /* ifndef TILEMAP_H */

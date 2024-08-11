@@ -56,6 +56,7 @@ const Entry* hashmap_get(HashMap* map, const char* key);
 void hashmap_update(HashMap* map, const char* key, void* value);
 void hashmap_delete(HashMap* map, const char* key);
 void hashmap_deinit(HashMap* map);
-
+void hashmap_init_iterator(HashMapIterator* it, HashMap* map);
+Entry* hashmap_next_entry(HashMapIterator* it);
 void hashmap_print(HashMap* map);
 #endif // !HASHMAP_H

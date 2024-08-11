@@ -1,6 +1,7 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <stddef.h>
 
@@ -39,6 +40,14 @@ typedef struct {
 typedef struct {
     Directory directory;
 } HashMap;
+
+typedef struct {
+    size_t page;
+    size_t entry;
+    size_t map_size;
+    size_t bucket_size;
+    HashMap* map;
+} HashMapIterator;
 
 
 void hashmap_init(HashMap* map);

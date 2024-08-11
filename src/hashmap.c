@@ -1,9 +1,11 @@
 #include "inc/hashmap.h"
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
+#define HASHMAP_DIRECTORY_LEN(map) ((1 << (map)->directory.global_depth))
 
 size_t hash(const char* str, size_t depth) {
     uint64_t hash = 7919;
@@ -181,3 +183,41 @@ void hashmap_print(HashMap* map) {
     }
     printf("}\n");
 }
+
+void hashmap_init_iterator(HashMapIterator* it, HashMap* map) {
+    it->page = 0;
+    it->entry = 0;
+
+    it->map = map;
+    it->bucket_size = 0;
+    it->map_size = HASHMAP_DIRECTORY_LEN(map);
+}
+
+Entry* hashmap_next_entry(HashMapIterator* it) {
+    if (it->page >= it->map_size) return NULL;
+    assert(it->map_size == HASHMAP_DIRECTORY_LEN(it->map));
+
+    while (!it->map->directory.buckets[it->page]->len) {
+        it->page++;
+    }
+
+    if (it->page >= it->map_size) return NULL;
+
+    Bucket* bucket = it->map->directory.buckets[it->page];
+    if (it->bucket_size == 0) {
+        it->bucket_size = bucket->len;
+    }
+
+    /* printf("test %zu == %zu\n", it->bucket_size, bucket->len); */
+    assert(it->bucket_size == bucket->len);
+    Entry* entry = &bucket->entries[it->entry++];
+
+    if (it->entry >= bucket->len) {
+        it->page++;
+        it->entry = 0;
+        it->bucket_size = 0;
+    }
+
+    return entry;
+}
+

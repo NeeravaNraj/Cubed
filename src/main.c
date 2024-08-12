@@ -39,9 +39,9 @@ int main() {
     world.player.entity.position.x = 250;
 
     InitWindow(WIDTH, HEIGHT, "Cubed");
+    SetTargetFPS(60);
     while (!WindowShouldClose()) {
         ClearBackground(SKY_COLOR);
-        SetTargetFPS(60);
         float dt = GetFrameTime();
 
         switch (GetKeyPressed()) {

@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <raylib.h>
 #include "inc/tilemap.h"
@@ -24,6 +26,8 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
     int tile_x = position.x / TILE_SIZE;
     int tile_y = position.y / TILE_SIZE;
 
+    assert(tile_x < INT_MAX && tile_x > INT_MIN);
+    assert(tile_y < INT_MAX && tile_y > INT_MIN);
     int counter = 0;
     char buffer[24] = {0};
     for (int i = 0; i < 9; ++i) {

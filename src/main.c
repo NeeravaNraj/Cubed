@@ -4,6 +4,8 @@
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/entities/player.h"
+#include "inc/hashmap.h"
+#include "inc/tilemap.h"
 #include "inc/tiles.h"
 
 
@@ -11,32 +13,52 @@
 
 struct World {
     Player player;
-
+    Tilemap tilemap;
 } world;
 
 void init() {
     init_player(&world.player);
+    tilemap_init(&world.tilemap);
 }
 
 int main() {
     init();
     arena_init();
 
-    Tile tile = {
-        .position = {
-            .x = 200,
-            .y = 600,
-        },
-        .kind = Platform,
-    };
-    Tile tile2 = {
-        .position = {
-            .x = 400,
-            .y = 550,
-        },
-        .kind = GrassPlatform,
-    };
-    world.player.entity.position.x = 250;
+    /* Tile tile = { */
+    /*     .position = { */
+    /*         .x = 200, */
+    /*         .y = 600, */
+    /*     }, */
+    /*     .kind = Platform, */
+    /* }; */
+    /* Tile tile2 = { */
+    /*     .position = { */
+    /*         .x = 400, */
+    /*         .y = 550, */
+    /*     }, */
+    /*     .kind = GrassPlatform, */
+    /* }; */
+
+    world.player.entity.position.x = 100;
+    world.player.entity.position.y = 400;
+    int x = 0;
+    for (int i = 1; i <= 10; ++i) {
+        Tile* tile = arena_alloc(sizeof(Tile));
+        tile->position.x = x += 100;
+        tile->position.y = 600;
+        tile->kind = Platform;
+        tilemap_add_tile(&world.tilemap, tile);
+    }
+    /* x = 200; */
+    /* for (int i = 1; i <= 10; ++i) { */
+    /*     Tile* tile = arena_alloc(sizeof(Tile)); */
+    /*     tile->position.x = x += 200; */
+    /*     tile->position.y = 600; */
+    /*     tile->kind = GrassPlatform; */
+    /*     tilemap_add_tile(&world.tilemap, tile); */
+    /* } */
+    hashmap_print(&world.tilemap.map);
 
     InitWindow(WIDTH, HEIGHT, "Cubed");
     SetTargetFPS(60);
@@ -63,11 +85,10 @@ int main() {
         }
 
 
-        world.player.entity.update(&world.player.entity, dt);
+        world.player.entity.update(&world.player.entity, &world.tilemap, dt);
         BeginDrawing();
-            render_tile(&tile);
-            render_tile(&tile2);
             world.player.entity.render(&world.player.entity);
+            tilemap_render(&world.tilemap);
         EndDrawing();
     }
     

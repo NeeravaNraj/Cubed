@@ -2,6 +2,7 @@
 #define ENTITES_H
 
 #include <raylib.h>
+#include "./tilemap.h"
 
 typedef struct Entity {
     Vector2 position;
@@ -9,7 +10,7 @@ typedef struct Entity {
     Vector2 size;
     void* implementor;
 
-    void (*update)(struct Entity*, float);
+    void (*update)(struct Entity*, Tilemap*, float);
     void (*render)(struct Entity*);
 } Entity;
 

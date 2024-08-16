@@ -176,7 +176,7 @@ void hashmap_print(HashMap* map) {
         for (int j = 0; j < bucket->len; ++j) {
             Entry* entry = &bucket->entries[j];
             size_t h = hash(entry->key, map->directory.global_depth);
-            printf("      %s = %p, hash = ", entry->key, entry->value);
+            printf("      '%s' = %p, hash = ", entry->key, entry->value);
             print_binary(h, map->directory.global_depth);
             printf("\n");
         }

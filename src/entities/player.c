@@ -11,6 +11,14 @@
 #define MOVEMENT_SPEED 2.5
 #define TERMINAL_VELOCITY 20
 
+typedef enum {
+    None,
+    Left,
+    Right,
+    Up,
+    Down,
+} CollideDirection;
+
 void player_render(Entity* entity) {
     int offset = 10;
 
@@ -25,12 +33,75 @@ void player_render(Entity* entity) {
     DrawRectangleV(body_offset, body, PLAYER_COLOR);
 }
 
-void player_update(Entity* entity, float dt) {
+void player_update(Entity* entity, Tilemap* tm, float dt) {
     Player* player = entity->implementor;
-    entity->position.y += entity->velocity.y;
-
+    
+    CollideDirection collide_dir = None;
+    Vector2 move_direction = {
+        .x = player->movement[0] + entity->velocity.x,
+        .y = player->movement[1] + entity->velocity.y,
+    };
     entity->position.x += (player->movement[1] - player->movement[0]) * MOVEMENT_SPEED;
+    Rectangle player_rect = {
+        .x = entity->position.x,
+        .y = entity->position.y,
+        .width = PLAYER_SIZE,
+        .height = PLAYER_SIZE,
+    };
+
+    Tile** tiles_around = tilemap_tiles_around(tm, entity->position);
+    for (int i = 0; i < 9; ++i) {
+        Tile* tile = tiles_around[i];
+        if (!tile) continue;
+        Rectangle physics_rect = {
+            .x = tile->position.x,
+            .y = tile->position.y,
+            .width = TILE_SIZE,
+            .height = TILE_SIZE,
+        };
+        if (
+            CheckCollisionRecs(player_rect, physics_rect) &&
+            physics_rect.y < player_rect.y + player_rect.height - 1
+        ) {
+            if (move_direction.x > 0) {
+                collide_dir |= Right;
+                player_rect.x = physics_rect.x - player_rect.width;
+            } else if (move_direction.x < 0) {
+                collide_dir |= Left;
+                player_rect.x = physics_rect.x + physics_rect.width;
+            }
+            entity->position.x = player_rect.x;
+        }
+    }
+    entity->position.y += entity->velocity.y;
+    player_rect.x = entity->position.x;
+    player_rect.y = entity->position.y;
+    tiles_around = tilemap_tiles_around(tm, entity->position);
+    for (int i = 0; i < 9; ++i) {
+        Tile* tile = tiles_around[i];
+        if (!tile) continue;
+        Rectangle physics_rect = {
+            .x = tile->position.x,
+            .y = tile->position.y,
+            .width = TILE_SIZE,
+            .height = TILE_SIZE,
+        };
+        if (CheckCollisionRecs(player_rect, physics_rect)) {
+            if (move_direction.y < 0) {
+                collide_dir |= Up;
+                player_rect.y = physics_rect.y + physics_rect.height;
+            } else if (move_direction.y > 0) {
+                collide_dir |= Down;
+                player_rect.y = physics_rect.y - player_rect.height;
+            }
+            entity->position.y = player_rect.y;
+        }
+    }
+
     entity->velocity.y = minf(TERMINAL_VELOCITY, entity->velocity.y + GRAVITY);
+    if ((collide_dir & Up) || (collide_dir & Down)) {
+        entity->velocity.y = 0;
+    }
 }
 
 void init_player(Player* player) {

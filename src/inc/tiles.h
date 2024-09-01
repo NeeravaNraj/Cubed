@@ -3,8 +3,9 @@
 #include <raylib.h>
 
 typedef enum Tiles {
-    Platform,
+    Platform = 0,
     GrassPlatform,
+    EndTile,
 } Tiles;
 
 typedef struct Tile {
@@ -13,4 +14,5 @@ typedef struct Tile {
 } Tile;
 
 void render_tile(Tile* tile);
+void draw_tile(Tiles kind, Vector2 position);
 #endif // !TILES_H

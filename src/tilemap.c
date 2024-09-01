@@ -37,6 +37,7 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
         "%d%c%d",
         tile_x, COORD_DELIM, tile_y
     );
+    printf("%s\n", key);
     assert(printed == TOTAL - 1);
     hashmap_insert(&tm->map, key, tile);
 #undef TOTAL
@@ -57,7 +58,7 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
         int to_print = snprintf(
             buffer, 24, "%d%c%d",
             offset_tile_x, COORD_DELIM, offset_tile_y
-        ); 
+        );
         assert(to_print < 24 || to_print == 0);
 
         const Entry* entry = hashmap_get(&tm->map, buffer);

@@ -66,11 +66,12 @@ void split_bucket(HashMap* map, size_t hash_index) {
     old_bucket->local_depth = new_local_depth;
 
     // Redistribution
-    for (int i = 0; i < old_bucket->len; ++i) {
+    int old_bucket_len = old_bucket->len;
+    for (int i = 0; i < old_bucket_len; ++i) {
         Entry entry = old_bucket->entries[i];
         size_t hash_value = hash(entry.key, new_local_depth);
 
-        if (hash_value & (1 << local_depth)) {
+        if (hash_value & new_local_depth) {
             new_bucket->entries[new_bucket->len++] = entry;
             old_bucket->entries[i] = old_bucket->entries[--old_bucket->len];
         }

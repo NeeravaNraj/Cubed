@@ -45,8 +45,8 @@ int main() {
     int x = 0;
     for (int i = 1; i <= 10; ++i) {
         Tile* tile = arena_alloc(sizeof(Tile));
-        tile->position.x = x += 100;
-        tile->position.y = 600;
+        tile->position.x = x += 60;
+        tile->position.y = 600 - i * 25;
         tile->kind = Platform;
         tilemap_add_tile(&world.tilemap, tile);
     }
@@ -67,9 +67,11 @@ int main() {
         float dt = GetFrameTime();
 
         switch (GetKeyPressed()) {
-            case KEY_SPACE:
-                world.player.entity.velocity.y -= 7;
+            case KEY_SPACE: {
+                float velocity = world.player.entity.velocity.y;
+                world.player.entity.velocity.y = minf(velocity - 7, 5);
                 break;
+            }
         }
 
         if (IsKeyDown(KEY_A)) {

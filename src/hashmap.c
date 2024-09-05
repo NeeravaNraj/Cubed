@@ -46,7 +46,7 @@ void split_bucket(HashMap* map, size_t hash_index) {
     Bucket* old_bucket = map->directory.buckets[hash_index];
     int local_depth = old_bucket->local_depth;
     int new_local_depth = local_depth + 1;
-    size_t new_bucket_index = 0;
+    size_t new_bucket_index;
 
     if (new_local_depth > map->directory.global_depth) {
         int old_size = 1 << map->directory.global_depth;
@@ -66,14 +66,22 @@ void split_bucket(HashMap* map, size_t hash_index) {
     old_bucket->local_depth = new_local_depth;
 
     // Redistribution
-    int old_bucket_len = old_bucket->len;
-    for (int i = 0; i < old_bucket_len; ++i) {
+    for (int i = 0; i < old_bucket->len; ++i) {
         Entry entry = old_bucket->entries[i];
         size_t hash_value = hash(entry.key, new_local_depth);
 
-        if (hash_value & new_local_depth) {
+        if (hash_value & (1 << local_depth)) {
+            new_bucket_index = hash_value;
             new_bucket->entries[new_bucket->len++] = entry;
-            old_bucket->entries[i] = old_bucket->entries[--old_bucket->len];
+
+            for (int j = i; j < old_bucket->len; ++j) {
+                if (j + 1 < old_bucket->len) {
+                    old_bucket->entries[j] = old_bucket->entries[j + 1];
+                }
+            }
+
+            --i;
+            --old_bucket->len;
         }
     }
     
@@ -87,6 +95,8 @@ void split_bucket(HashMap* map, size_t hash_index) {
 void hashmap_insert(HashMap* map, const char* key, void* value) {
     size_t hash_index = hash(key, map->directory.global_depth);
     Bucket* bucket = map->directory.buckets[hash_index];
+
+    if (hashmap_get(map, key)) return;
 
     if (bucket->len < BUCKET_SIZE) {
         bucket->entries[bucket->len].key = key;
@@ -173,7 +183,7 @@ void hashmap_print(HashMap* map) {
     printf("{\n");
     for (int i = 0; i < dir_len; ++i) {
         Bucket* bucket = map->directory.buckets[i];
-        printf("    Bucket %d\n", i);
+        printf("    Bucket %d with ld = %zu at [%p]\n", i, bucket->local_depth, bucket);
         for (int j = 0; j < bucket->len; ++j) {
             Entry* entry = &bucket->entries[j];
             size_t h = hash(entry->key, map->directory.global_depth);

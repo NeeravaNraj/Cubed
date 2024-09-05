@@ -37,7 +37,6 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
         "%d%c%d",
         tile_x, COORD_DELIM, tile_y
     );
-    printf("%s\n", key);
     assert(printed == TOTAL - 1);
     hashmap_insert(&tm->map, key, tile);
 #undef TOTAL
@@ -51,6 +50,7 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
     assert(tile_y < INT_MAX && tile_y > INT_MIN);
     int counter = 0;
     char buffer[24] = {0};
+    /* printf("["); */
     for (int i = 0; i < 9; ++i) {
         Vector2 offset = NEIGHBOUR_OFFSETS[i];
         int offset_tile_x = tile_x + offset.x;
@@ -66,6 +66,7 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
             tm->around[counter++] = entry->value;
         }
     }
+
     tm->around[counter] = NULL;
 
     return tm->around;

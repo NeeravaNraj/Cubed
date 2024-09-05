@@ -1,14 +1,11 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <raylib.h>
-
 #include "inc/arena.h"
 #include "inc/common.h"
-#include "inc/entities/player.h"
-#include "inc/hashmap.h"
 #include "inc/tilemap.h"
 #include "inc/tiles.h"
 #include "inc/ui/editor.h"
+#include "inc/entities/player.h"
 
 
 #define SKY_COLOR ((Color) { .r = 130, .g = 200, .b = 230, .a = 255 })
@@ -17,6 +14,7 @@ struct World {
     Player player;
     Tilemap tilemap;
     EditorState editor_state;
+    Vector2 screen_offset;
     bool edit_mode;
 } world;
 
@@ -48,8 +46,12 @@ void handle_events() {
         world.player.entity.velocity.y = minf(velocity - 7, 5);
     }
 
+    if (IsKeyPressed(KEY_P)) {
+        world.edit_mode = !world.edit_mode;
+    }
+
     if (world.edit_mode) {
-        editor_handle_events();
+        editor_handle_events(&world.editor_state);
     }
 }
 
@@ -58,7 +60,7 @@ void render() {
         world.player.entity.render(&world.player.entity);
         tilemap_render(&world.tilemap);
     } else {
-        editor_render();
+        editor_render(&world.editor_state);
     }
 }
 
@@ -77,10 +79,9 @@ int main() {
         tilemap_add_tile(&world.tilemap, tile);
     }
 
-    hashmap_print(&world.tilemap.map);
-
     InitWindow(WIDTH, HEIGHT, "Cubed");
     SetTargetFPS(60);
+
     while (!WindowShouldClose()) {
         ClearBackground(SKY_COLOR);
         float dt = GetFrameTime();

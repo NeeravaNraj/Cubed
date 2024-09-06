@@ -30,6 +30,7 @@ typedef struct {
     Entry entries[BUCKET_SIZE];
     size_t len;
     size_t local_depth;
+    int prefix;
 } Bucket;
 
 typedef struct {

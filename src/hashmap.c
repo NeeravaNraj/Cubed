@@ -1,9 +1,11 @@
 #include "inc/hashmap.h"
-#include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <stdbool.h>
 
 #define HASHMAP_DIRECTORY_LEN(map) ((1 << (map)->directory.global_depth))
 
@@ -34,6 +36,7 @@ void init_directory(Directory* directory) {
 
     for (int i = 0; i < len; ++i) {
         init_bucket(&directory->buckets[i], INITIAL_GLOBAL_DEPTH);
+        directory->buckets[i]->prefix = i;
     }
 }
 
@@ -42,20 +45,17 @@ void hashmap_init(HashMap* map) {
     init_directory(&map->directory);
 }
 
+
 void split_bucket(HashMap* map, size_t hash_index) {
     Bucket* old_bucket = map->directory.buckets[hash_index];
     int local_depth = old_bucket->local_depth;
     int new_local_depth = local_depth + 1;
-    size_t new_bucket_index;
 
     if (new_local_depth > map->directory.global_depth) {
         int old_size = 1 << map->directory.global_depth;
         int new_size = old_size * 2;
         map->directory.buckets = REALLOC(map->directory.buckets, sizeof(Bucket*) * new_size);
         for (int i = old_size; i < new_size; ++i) {
-            if (i - old_size == hash_index) {
-                new_bucket_index = i;
-            }
             map->directory.buckets[i] = map->directory.buckets[i - old_size];
         }
         map->directory.global_depth++;
@@ -65,13 +65,26 @@ void split_bucket(HashMap* map, size_t hash_index) {
     init_bucket(&new_bucket, new_local_depth);
     old_bucket->local_depth = new_local_depth;
 
+    bool set = false;
+    size_t dir_size = 1 << map->directory.global_depth;
+    for (int i = old_bucket->prefix + 1; i < dir_size; ++i) {
+        Bucket* bucket = map->directory.buckets[i];
+
+        if (bucket->prefix == old_bucket->prefix && i & (1 << local_depth)) {
+            map->directory.buckets[i] = new_bucket;
+            if (!set) {
+                new_bucket->prefix = i;
+                set = true;
+            }
+        }
+    }
+
     // Redistribution
     for (int i = 0; i < old_bucket->len; ++i) {
         Entry entry = old_bucket->entries[i];
         size_t hash_value = hash(entry.key, new_local_depth);
 
         if (hash_value & (1 << local_depth)) {
-            new_bucket_index = hash_value;
             new_bucket->entries[new_bucket->len++] = entry;
 
             for (int j = i; j < old_bucket->len; ++j) {
@@ -79,15 +92,8 @@ void split_bucket(HashMap* map, size_t hash_index) {
                     old_bucket->entries[j] = old_bucket->entries[j + 1];
                 }
             }
-
-            --i;
             --old_bucket->len;
-        }
-    }
-    
-    for (int i = 0; i < (1 << map->directory.global_depth); ++i) {
-        if ((i & ((1 << new_local_depth) - 1)) == new_bucket_index) {
-            map->directory.buckets[i] = new_bucket;
+            --i;
         }
     }
 }
@@ -95,6 +101,7 @@ void split_bucket(HashMap* map, size_t hash_index) {
 void hashmap_insert(HashMap* map, const char* key, void* value) {
     size_t hash_index = hash(key, map->directory.global_depth);
     Bucket* bucket = map->directory.buckets[hash_index];
+    /* bool same = (hash_index & ((1 << bucket->local_depth) - 1)) == bucket->prefix; */
 
     if (hashmap_get(map, key)) return;
 
@@ -158,14 +165,23 @@ void hashmap_delete(HashMap* map, const char* key) {
 }
 
 void hashmap_deinit(HashMap* map) {
-    for (int i = 0; i < (1 << map->directory.global_depth); ++i) {
+    size_t dir_size = 1 << map->directory.global_depth;
+    size_t freed_count = 0;
+    Bucket** freed = MALLOC(sizeof(Bucket*) * dir_size);
+    for (int i = 0; i < dir_size; ++i) {
         Bucket* bucket = map->directory.buckets[i];
-        if (bucket->local_depth) {
-            FREE(bucket);
-            bucket->local_depth = 0;
+        for (int j = 0; j < freed_count; ++j) {
+            if (bucket == freed[j]) {
+                goto next;
+            }
         }
+
+        FREE(bucket);
+        freed[freed_count++] = bucket;
+next: continue;
     }
 
+    FREE(freed);
     FREE(map->directory.buckets);
     map->directory.buckets = NULL;
     map->directory.global_depth = 0;
@@ -179,17 +195,33 @@ void print_binary(size_t num, size_t depth) {
 
 void hashmap_print(HashMap* map) {
     size_t dir_len = (1 << map->directory.global_depth);
+    Bucket** buckets = alloca(sizeof(Bucket*) * dir_len);
+    size_t printed_buckets = 0;
 
-    printf("{\n");
+    printf("{\n    gd = %zu\n", map->directory.global_depth);
     for (int i = 0; i < dir_len; ++i) {
         Bucket* bucket = map->directory.buckets[i];
-        printf("    Bucket %d with ld = %zu at [%p]\n", i, bucket->local_depth, bucket);
-        for (int j = 0; j < bucket->len; ++j) {
-            Entry* entry = &bucket->entries[j];
-            size_t h = hash(entry->key, map->directory.global_depth);
-            printf("      '%s' = %p, hash = ", entry->key, entry->value);
-            print_binary(h, map->directory.global_depth);
-            printf("\n");
+        bool printed = false;
+        size_t parent;
+        for (int j = 0; j < printed_buckets; ++j) {
+            if (buckets[j] == bucket) {
+                printed = true;
+                parent = j;
+            }
+        }
+
+        if (!printed) {
+            buckets[printed_buckets++] = bucket;
+            printf("    Bucket %d with ld = %zu at [%p]\n", i, bucket->local_depth, bucket);
+            for (int j = 0; j < bucket->len; ++j) {
+                Entry* entry = &bucket->entries[j];
+                size_t h = hash(entry->key, map->directory.global_depth);
+                printf("      %s = %p, hash = ", entry->key, entry->value);
+                print_binary(h, map->directory.global_depth);
+                printf("\n");
+            }
+        } else {
+            printf("    Bucket %d -> %zu with ld = %zu at [%p]\n", i, parent, bucket->local_depth, bucket);
         }
     }
     printf("}\n");
@@ -203,6 +235,7 @@ void hashmap_init_iterator(HashMapIterator* it, HashMap* map) {
     it->bucket_size = 0;
     it->map_size = HASHMAP_DIRECTORY_LEN(map);
 }
+
 
 Entry* hashmap_next_entry(HashMapIterator* it) {
     if (it->page >= it->map_size) return NULL;

@@ -1,6 +1,5 @@
 #include <raylib.h>
 #include <raymath.h>
-#include <stdio.h>
 #include "../inc/common.h"
 #include "../inc/entities/player.h"
 
@@ -20,18 +19,18 @@ typedef enum {
     Down,
 } CollideDirection;
 
-void player_render(Entity* entity) {
-    int offset = 10;
+void player_render(Entity* entity, Vector2 offset) {
+    int border_offset = 10;
 
     Vector2 body;
     Vector2 body_offset;
 
-    body.x = entity->size.x - offset;
-    body.y = entity->size.y - offset;
-    body_offset.x = entity->position.x + offset / 2; // NOLINT
-    body_offset.y = entity->position.y + offset / 2; // NOLINT
-    DrawRectangleV(entity->position, entity->size, PLAYER_OUTLINE_COLOR);
-    DrawRectangleV(body_offset, body, PLAYER_COLOR);
+    body.x = entity->size.x - border_offset;
+    body.y = entity->size.y - border_offset;
+    body_offset.x = entity->position.x + border_offset / 2; // NOLINT
+    body_offset.y = entity->position.y + border_offset / 2; // NOLINT
+    DrawRectangleV(Vector2Add(entity->position, offset), entity->size, PLAYER_OUTLINE_COLOR);
+    DrawRectangleV(Vector2Add(body_offset, offset), body, PLAYER_COLOR);
 }
 
 Rectangle player_as_rect(Entity* entity) {

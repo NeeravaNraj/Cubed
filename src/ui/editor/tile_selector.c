@@ -3,14 +3,16 @@
 #include "../../inc/tiles.h"
 #include "../../inc/ui/editor.h"
 
-#define THUMBNAIL_PADDING 12
 #define PADDING 10
 #define ITEM_BOX_SIZE (BOTTOM_BAR_HEIGHT - PADDING * 2)
+/* #define THUMBNAIL_PADDING (ITEM_BOX_SIZE / TILE_SIZE + PADDING) */
 #define ITEM_BOX_BG ((Color) { .r = 200, .g = 200, .b = 200, .a = 255 })
 #define ITEM_BOX_BG_HOVER ((Color) { .r = 220, .g = 220, .b = 220, .a = 255 })
 #define ITEM_BOX_BG_SELECTED ((Color) { .r = 180, .g = 240, .b = 180, .a = 255 })
 
 #define NUMBER_BOXES (EndTile)
+
+const float THUMBNAIL_PADDING = (float)ITEM_BOX_SIZE - (float)TILE_SIZE;
 
 Vector2 itemboxes[NUMBER_BOXES];
 
@@ -62,9 +64,10 @@ void tile_selector_render(EditorState* state) {
             (Vector2) { .x = ITEM_BOX_SIZE, .y = ITEM_BOX_SIZE, },
             state->selected_tile == i ? ITEM_BOX_BG_SELECTED : color
         );
-        draw_tile(i, (Vector2) {
-            .x = x + THUMBNAIL_PADDING,
-            .y = y + THUMBNAIL_PADDING,
-        });
+        draw_tile(
+            i,
+            (Vector2) { .x = x + THUMBNAIL_PADDING / 2, .y = y + THUMBNAIL_PADDING, },
+            (Vector2) {.x = 0, .y = 0}
+        );
     }
 }

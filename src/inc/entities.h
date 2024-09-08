@@ -11,7 +11,7 @@ typedef struct Entity {
     void* implementor;
 
     void (*update)(struct Entity*, Tilemap*, float);
-    void (*render)(struct Entity*);
+    void (*render)(struct Entity*, Vector2);
 } Entity;
 
 #endif // !ENTITES_H

@@ -8,7 +8,7 @@
 #ifndef HASHMAP_CONFIG
 
 #define INITIAL_GLOBAL_DEPTH 1
-#define BUCKET_SIZE 5
+#define BUCKET_SIZE 32
 
 #endif // !HASHMAP_CONFIG
 

@@ -38,6 +38,9 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
         tile_x, COORD_DELIM, tile_y
     );
     assert(printed == TOTAL - 1);
+
+    tile->position.x = tile_x * TILE_SIZE;
+    tile->position.y = tile_y * TILE_SIZE;
     hashmap_insert(&tm->map, key, tile);
 #undef TOTAL
 }
@@ -72,12 +75,12 @@ Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
     return tm->around;
 }
 
-void tilemap_render(Tilemap* tm) {
+void tilemap_render(Tilemap* tm, Vector2 offset) {
     Entry* tile_entry;
     HashMapIterator it;
     hashmap_init_iterator(&it, &tm->map);
     while ((tile_entry = hashmap_next_entry(&it))) {
         Tile* tile = tile_entry->value;
-        render_tile(tile);
+        render_tile(tile, offset);
     }
 }

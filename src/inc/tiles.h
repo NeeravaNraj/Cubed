@@ -13,6 +13,6 @@ typedef struct Tile {
     Vector2 position;
 } Tile;
 
-void render_tile(Tile* tile);
-void draw_tile(Tiles kind, Vector2 position);
+void render_tile(Tile* tile, Vector2 offset);
+void draw_tile(Tiles kind, Vector2 position, Vector2 offset);
 #endif // !TILES_H

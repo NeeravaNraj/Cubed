@@ -265,3 +265,12 @@ Entry* hashmap_next_entry(HashMapIterator* it) {
     return entry;
 }
 
+size_t hashmap_len(HashMap* map) {
+    size_t total = 0;
+
+    for (size_t i = 0; i < (1 << map->directory.global_depth); ++i) {
+        total += map->directory.buckets[i]->len;
+    }
+
+    return total;
+}

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <unistd.h>
 #include <raylib.h>
 #include "inc/arena.h"
@@ -20,31 +21,20 @@ struct World {
 
 void init() {
     world.edit_mode = !false;
+    world.screen_offset = (Vector2){ .x = 0, .y = 0 };
     init_player(&world.player);
     tilemap_init(&world.tilemap);
 
     if (world.edit_mode) {
-        editor_init(&world.editor_state, &world.tilemap);
+        editor_init(
+            &world.editor_state,
+            &world.tilemap,
+            &world.screen_offset
+        );
     }
 }
 
 void handle_events() {
-    if (IsKeyDown(KEY_A)) {
-        world.player.movement[0] = true;
-    } else {
-        world.player.movement[0] = false;
-    }
-
-    if (IsKeyDown(KEY_D)) {
-        world.player.movement[1] = true;
-    } else {
-        world.player.movement[1] = false;
-    }
-
-    if (IsKeyPressed(KEY_SPACE)) {
-        float velocity = world.player.entity.velocity.y;
-        world.player.entity.velocity.y = minf(velocity - 7, 5);
-    }
 
     if (IsKeyPressed(KEY_P)) {
         world.edit_mode = !world.edit_mode;
@@ -52,13 +42,30 @@ void handle_events() {
 
     if (world.edit_mode) {
         editor_handle_events(&world.editor_state);
+    } else {
+        if (IsKeyDown(KEY_A)) {
+            world.player.movement[0] = true;
+        } else {
+            world.player.movement[0] = false;
+        }
+
+        if (IsKeyDown(KEY_D)) {
+            world.player.movement[1] = true;
+        } else {
+            world.player.movement[1] = false;
+        }
+
+        if (IsKeyPressed(KEY_SPACE)) {
+            float velocity = world.player.entity.velocity.y;
+            world.player.entity.velocity.y = minf(velocity - 7, 5);
+        }
     }
 }
 
 void render() {
+    world.player.entity.render(&world.player.entity, world.screen_offset);
     if (!world.edit_mode) {
-        world.player.entity.render(&world.player.entity);
-        tilemap_render(&world.tilemap);
+        tilemap_render(&world.tilemap, world.screen_offset);
     } else {
         editor_render(&world.editor_state);
     }

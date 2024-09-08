@@ -3,7 +3,9 @@
 #include <string.h>
 #include <time.h>
 #include "inc/level.h"
+#include "inc/arena.h"
 #include "inc/hashmap.h"
+#include "inc/tilemap.h"
 #include "inc/tiles.h"
 
 void handle_err(bool cond, char* loc, char* message) {
@@ -53,4 +55,43 @@ void write_level(char *name, Tilemap *map) {
 
     fclose(file);
     free(filename);
+}
+
+
+void read_level(char *filename, Tilemap *map, int version) {
+    size_t read;
+    char* name;
+    Headers headers;
+    Properties properties;
+
+    FILE* file = fopen(filename, "rb");
+    handle_err(file != NULL, "read_level", "ERROR: Failed to read level file.");
+
+    read = fread(&headers, sizeof(Headers), 1, file);
+    handle_err(read == 1, NULL, "ERROR: Could not read 'Headers' properly from file.");
+
+    if (headers.magic != MAGIC || headers.version != version) {
+        fprintf(stderr, "ERROR: Invalid level file\n");
+        // TODO: maybe got back to main menu or something
+        goto cleanup; 
+    }
+
+    for (size_t i = 0; i < headers.tile_length; ++i) {
+        Tile* tile = arena_alloc(sizeof(Tile));
+        read = fread(tile, sizeof(Tile), 1, file);
+        handle_err(read == 1, NULL, "ERROR: Could not read 'Tile' properly from file.");
+        tilemap_add_tile(map, tile);
+    }
+
+    read = fread(&properties.level_name_len, sizeof(size_t), 1, file);
+    handle_err(read == 1, NULL, "ERROR: Could not read 'Properties.level_name_len' properly from file.");
+
+    name = arena_alloc(properties.level_name_len);
+    read = fread(name, sizeof(char), properties.level_name_len, file);
+    handle_err(read == properties.level_name_len, NULL, "ERROR: Could not read 'Properties.level_name' properly from file.");
+    properties.level_name = name;
+    printf("Finished reading level: '%s'\n", name);
+
+cleanup:
+    fclose(file);
 }

@@ -22,5 +22,5 @@ typedef struct {
 } Properties;
 
 void write_level(char* name, Tilemap* map);
-void read_level(char* filename, Tilemap* map);
+void read_level(char* filename, Tilemap* map, int version);
 #endif // LEVEL_H

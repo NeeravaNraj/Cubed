@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include "inc/arena.h"
 #include "inc/common.h"
+#include "inc/level.h"
 #include "inc/tilemap.h"
 #include "inc/tiles.h"
 #include "inc/ui/editor.h"
@@ -77,14 +78,15 @@ int main() {
 
     world.player.entity.position.x = 100;
     world.player.entity.position.y = 400;
-    int x = 0;
-    for (int i = 1; i <= 10; ++i) {
-        Tile* tile = arena_alloc(sizeof(Tile));
-        tile->position.x = x += 60;
-        tile->position.y = 600 - i * 25;
-        tile->kind = Platform;
-        tilemap_add_tile(&world.tilemap, tile);
-    }
+    read_level("test_level.cdb", &world.tilemap, 0);
+    /* int x = 0; */
+    /* for (int i = 1; i <= 10; ++i) { */
+    /*     Tile* tile = arena_alloc(sizeof(Tile)); */
+    /*     tile->position.x = x += 60; */
+    /*     tile->position.y = 600 - i * 25; */
+    /*     tile->kind = Platform; */
+    /*     tilemap_add_tile(&world.tilemap, tile); */
+    /* } */
 
     InitWindow(WIDTH, HEIGHT, "Cubed");
     SetTargetFPS(60);

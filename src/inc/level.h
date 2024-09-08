@@ -2,6 +2,7 @@
 #define LEVEL_H
 #include <raylib.h>
 #include <stddef.h>
+#include <stdio.h>
 #include "./tiles.h"
 #include "tilemap.h"
 
@@ -16,7 +17,7 @@ typedef struct {
 } Headers;
 
 typedef struct {
-    int level_name_len;
+    size_t level_name_len;
     char* level_name;
 } Properties;
 

@@ -1,4 +1,5 @@
 #include "../../inc/ui/editor.h"
+#include "../../inc/level.h"
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
@@ -20,6 +21,12 @@ void editor_handle_events(EditorState* state) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
         Vector2 tile_pos = Vector2Subtract(mouse_pos, *state->screen_offset);
         add_tile(state, tile_pos);
+    }
+
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
+        write_level("test_level", state->map);
+        TraceLog(LOG_INFO, "Level saved.");
+        return;
     }
 
     if (IsKeyDown(KEY_A)) {

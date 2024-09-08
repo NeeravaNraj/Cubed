@@ -60,4 +60,5 @@ void hashmap_deinit(HashMap* map);
 void hashmap_init_iterator(HashMapIterator* it, HashMap* map);
 Entry* hashmap_next_entry(HashMapIterator* it);
 void hashmap_print(HashMap* map);
+size_t hashmap_len(HashMap* map);
 #endif // !HASHMAP_H

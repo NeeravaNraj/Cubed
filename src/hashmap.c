@@ -241,8 +241,11 @@ Entry* hashmap_next_entry(HashMapIterator* it) {
     if (it->page >= it->map_size) return NULL;
     assert(it->map_size == HASHMAP_DIRECTORY_LEN(it->map));
 
-    while (!it->map->directory.buckets[it->page]->len) {
-        it->page++;
+    while (true) {
+        Bucket* bucket = it->map->directory.buckets[it->page];
+        if (!bucket) return NULL;
+        if (!bucket->len) it->page++;
+        else break;
     }
 
     if (it->page >= it->map_size) return NULL;

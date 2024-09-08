@@ -32,7 +32,7 @@ void write_level(char *name, Tilemap *map) {
     };
 
     Properties properties = {
-        .level_name_len = name_len,
+        .level_name_len = name_len + 1,
         .level_name = name,
     };
 
@@ -87,6 +87,8 @@ void read_level(char *filename, Tilemap *map, int version) {
     handle_err(read == 1, NULL, "ERROR: Could not read 'Properties.level_name_len' properly from file.");
 
     name = arena_alloc(properties.level_name_len);
+    name[properties.level_name_len] = '\0';
+
     read = fread(name, sizeof(char), properties.level_name_len, file);
     handle_err(read == properties.level_name_len, NULL, "ERROR: Could not read 'Properties.level_name' properly from file.");
     properties.level_name = name;

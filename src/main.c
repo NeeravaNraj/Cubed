@@ -68,8 +68,9 @@ void update(float dt) {
     if (!world.edit_mode) {
         Entity player = world.player.entity;
         world.player.entity.update(&world.player.entity, &world.tilemap, dt);
-        world.screen_offset.x = -player.position.x + (float)WIDTH / 2 - 250;
-        world.screen_offset.y = -player.position.y + (float)HEIGHT / 2;
+        float t = 0.1;
+        world.screen_offset.x = lerpf(t, world.screen_offset.x, -player.position.x + (float)WIDTH / 2 - 250);
+        world.screen_offset.y = lerpf(t, world.screen_offset.y, -player.position.y + (float)HEIGHT / 2);
     }
 }
 

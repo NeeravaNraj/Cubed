@@ -16,3 +16,7 @@ int min(int a, int b) {
 int max(int a, int b) {
     return a > b ? a : b;
 }
+
+float lerpf(float t, float a, float b) {
+    return a + (b - a) * t;
+}

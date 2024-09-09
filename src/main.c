@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include "inc/arena.h"
 #include "inc/common.h"
+#include "inc/entities.h"
 #include "inc/level.h"
 #include "inc/tilemap.h"
 #include "inc/tiles.h"
@@ -63,6 +64,15 @@ void handle_events() {
     }
 }
 
+void update(float dt) {
+    if (!world.edit_mode) {
+        Entity player = world.player.entity;
+        world.player.entity.update(&world.player.entity, &world.tilemap, dt);
+        world.screen_offset.x = -player.position.x + (float)WIDTH / 2 - 250;
+        world.screen_offset.y = -player.position.y + (float)HEIGHT / 2;
+    }
+}
+
 void render() {
     world.player.entity.render(&world.player.entity, world.screen_offset);
     if (!world.edit_mode) {
@@ -95,7 +105,7 @@ int main() {
         ClearBackground(SKY_COLOR);
         float dt = GetFrameTime();
         handle_events();
-        world.player.entity.update(&world.player.entity, &world.tilemap, dt);
+        update(dt);
         BeginDrawing();
             render();
         EndDrawing();

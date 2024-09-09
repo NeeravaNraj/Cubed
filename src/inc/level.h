@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "./tiles.h"
 #include "tilemap.h"
+#include "world.h"
 
 #define MAGIC 0xB18B00B2
 #define VERSION 0
@@ -13,6 +14,8 @@
 typedef struct {
     int magic;
     int version;
+    Vector2 spawn;
+    Vector2 end;
     size_t tile_length;
 } Headers;
 
@@ -21,6 +24,6 @@ typedef struct {
     char* level_name;
 } Properties;
 
-void write_level(char* name, Tilemap* map);
-void read_level(char* filename, Tilemap* map, int version);
+void write_level(char* name, World* world);
+void read_level(char* filename, World* world, int version);
 #endif // LEVEL_H

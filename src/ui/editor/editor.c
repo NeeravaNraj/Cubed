@@ -1,5 +1,6 @@
 #include "../../inc/ui/editor.h"
 #include "../../inc/level.h"
+#include "../../inc/ui/button.h"
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
@@ -7,50 +8,68 @@
 #define ROWS (HEIGHT / TILE_SIZE)
 #define COLS (WIDTH / TILE_SIZE)
 
+/* Button set_spawn = { */
+/*     .font_size = 16, */
+/*     .label = "Set spawn", */
+/*     .size = { .x = 120, .y = 30 }, */
+/*     .position = { .x = 20, .y = HEIGHT - BOTTOM_BAR_HEIGHT - 50 }, */
+/*     .font_color = WHITE, */
+/*     .background_color = { .r = 240, .g = 130, .b = 100, .a = 255 }, */
+/*     .border_size = 8, */
+/*     .border_color = { .r = 200, .g = 100, .b = 80, .a = 255 }, */
+/* }; */
+
 Vector2 mouse_pos;
 void add_tile(EditorState* state, Vector2 position) {
     Tile* tile = arena_alloc(sizeof(Tile));
     tile->kind = state->selected_tile;
     tile->position = position;
-    tilemap_add_tile(state->map, tile);
+    tilemap_add_tile(&state->world->tilemap, tile);
 }
 
+
 void editor_handle_events(EditorState* state) {
+    World* world = state->world;
     mouse_pos = GetMousePosition();
     tile_selector_handle_events(state);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
-        Vector2 tile_pos = Vector2Subtract(mouse_pos, *state->screen_offset);
+        Vector2 tile_pos = Vector2Subtract(mouse_pos, world->screen_offset);
         add_tile(state, tile_pos);
     }
 
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-        write_level("test_level", state->map);
+        write_level("test_level", world);
         TraceLog(LOG_INFO, "Level saved.");
         return;
     }
 
     if (IsKeyDown(KEY_A)) {
-        state->screen_offset->x += 1 * state->camera_speed;
+        world->screen_offset.x += 1 * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_D)) {
-        state->screen_offset->x -= 1 * state->camera_speed;
+        world->screen_offset.x -= 1 * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_W)) {
-        state->screen_offset->y += 1 * state->camera_speed;
+        world->screen_offset.y += 1 * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_S)) {
-        state->screen_offset->y -= 1 * state->camera_speed;
+        world->screen_offset.y -= 1 * state->camera_speed;
+    }
+
+    /* printf("mouse_pos: %f, %f\n", mouse_pos.x, mouse_pos.y); */
+    if (IsKeyPressed(KEY_X)) {
+        world->spawn.x = (mouse_pos.x / TILE_SIZE) * TILE_SIZE;
+        world->spawn.y = (mouse_pos.y / TILE_SIZE) * TILE_SIZE;
     }
 }
 
-void editor_init(EditorState* state, Tilemap* map, Vector2* screen_offset) {
-    state->map = map;
-    state->selected_tile = 0;
-    state->screen_offset = screen_offset;
+void editor_init(EditorState* state, World* world) {
+    state->world = world;
     state->camera_speed = 5;
+    state->selected_tile = 0;
 }
 
 void editor_grid_render(EditorState *state) {
@@ -79,7 +98,8 @@ void render_possible_tile(EditorState* state) {
 
 void editor_render(EditorState* state) {
     /* editor_grid_render(state); */
-    tilemap_render(state->map, *state->screen_offset);
+    World* world = state->world;
+    tilemap_render(&world->tilemap, world->screen_offset);
     render_possible_tile(state);
     tile_selector_render(state);
 }

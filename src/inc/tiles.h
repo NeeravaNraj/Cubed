@@ -6,6 +6,9 @@ typedef enum Tiles {
     Platform = 0,
     GrassPlatform,
     EndTile,
+
+    SpawnPoint,
+    EndPoint,
 } Tiles;
 
 typedef struct Tile {

@@ -16,7 +16,14 @@ EditorState editor_state;
 
 void init() {
     world.edit_mode = !false;
-    world.screen_offset = (Vector2){ .x = 0, .y = 0 };
+    world.camera = (Camera2D){
+        .zoom = 1,
+        .offset = { .x = 0, .y = 0 },
+        .target = {
+            .x =  -world.player.entity.position.x + (float)WIDTH / 2 - 250,
+            .y =  -world.player.entity.position.y + (float)HEIGHT / 2,
+        },
+    };
     init_player(&world.player);
     tilemap_init(&world.tilemap);
     /* world.spawn = (Vector2){ */
@@ -26,6 +33,8 @@ void init() {
 
     if (world.edit_mode) {
         editor_init(&editor_state, &world);
+        world.camera.target.x = (float)WIDTH / 2;
+        world.camera.target.y = (float)HEIGHT / 2;
     }
 }
 
@@ -33,6 +42,12 @@ void handle_events() {
 
     if (IsKeyPressed(KEY_P)) {
         world.edit_mode = !world.edit_mode;
+        if (world.edit_mode) {
+            int tile_x = world.camera.offset.x / TILE_SIZE;
+            int tile_y = world.camera.offset.y / TILE_SIZE;
+            world.camera.offset.x = tile_x * TILE_SIZE;
+            world.camera.offset.y = tile_y * TILE_SIZE;
+        }
     }
 
     if (world.edit_mode) {
@@ -62,15 +77,15 @@ void update(float dt) {
         Entity player = world.player.entity;
         world.player.entity.update(&world.player.entity, &world.tilemap, dt);
         float t = 0.1;
-        world.screen_offset.x = lerpf(t, world.screen_offset.x, -player.position.x + (float)WIDTH / 2 - 250);
-        world.screen_offset.y = lerpf(t, world.screen_offset.y, -player.position.y + (float)HEIGHT / 2);
+        world.camera.offset.x = lerpf(t, world.camera.offset.x, -player.position.x + (float)WIDTH / 2 - 250);
+        world.camera.offset.y = lerpf(t, world.camera.offset.y, -player.position.y + (float)HEIGHT / 2);
     }
 }
 
 void render() {
-    world.player.entity.render(&world.player.entity, world.screen_offset);
+    world.player.entity.render(&world.player.entity, world.camera.offset);
     if (!world.edit_mode) {
-        tilemap_render(&world.tilemap, world.screen_offset);
+        tilemap_render(&world.tilemap, world.camera.offset);
     } else {
         editor_render(&editor_state);
     }
@@ -91,7 +106,7 @@ int main() {
         handle_events();
         update(dt);
         BeginDrawing();
-            draw_tile(SpawnPoint, world.spawn, world.screen_offset);
+            draw_tile(SpawnPoint, world.spawn, world.camera.offset);
             render();
         EndDrawing();
     }

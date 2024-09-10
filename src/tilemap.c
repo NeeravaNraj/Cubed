@@ -41,7 +41,6 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
 
     tile->position.x = tile_x * TILE_SIZE;
     tile->position.y = tile_y * TILE_SIZE;
-    printf("tile: %f, %f\n", tile->position.x, tile->position.y);
     hashmap_insert(&tm->map, key, tile);
 #undef TOTAL
 }

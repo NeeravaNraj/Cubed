@@ -9,7 +9,7 @@
 typedef struct {
     Player player;
     Tilemap tilemap;
-    Vector2 screen_offset;
+    Camera2D camera;
 
     Vector2 spawn;
     Vector2 end;

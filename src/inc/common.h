@@ -3,7 +3,7 @@
 
 #define WIDTH 1280
 #define HEIGHT 720
-#define TILE_SIZE 50
+#define TILE_SIZE 48
 
 float minf(float a, float b);
 float maxf(float a, float b);

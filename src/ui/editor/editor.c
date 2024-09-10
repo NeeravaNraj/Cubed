@@ -32,8 +32,19 @@ void editor_handle_events(EditorState* state) {
     World* world = state->world;
     mouse_pos = GetMousePosition();
     tile_selector_handle_events(state);
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
-        Vector2 tile_pos = Vector2Subtract(mouse_pos, world->screen_offset);
+        Vector2 tile_pos = Vector2Subtract(mouse_pos, world->camera.offset);
+
+        if (tile_pos.x < 0 && (int)tile_pos.x % TILE_SIZE != 0) {
+            int rem = (int)(tile_pos.x) % TILE_SIZE;
+            tile_pos.x = tile_pos.x - rem - TILE_SIZE;
+        } 
+        if (tile_pos.y < 0 && (int)tile_pos.y % TILE_SIZE != 0) {
+            int rem = (int)(tile_pos.y) % TILE_SIZE;
+            tile_pos.y = tile_pos.y - rem - TILE_SIZE;
+        }
+
         add_tile(state, tile_pos);
     }
 
@@ -44,31 +55,33 @@ void editor_handle_events(EditorState* state) {
     }
 
     if (IsKeyDown(KEY_A)) {
-        world->screen_offset.x += 1 * state->camera_speed;
+        world->camera.offset.x += TILE_SIZE * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_D)) {
-        world->screen_offset.x -= 1 * state->camera_speed;
+        world->camera.offset.x -= TILE_SIZE * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_W)) {
-        world->screen_offset.y += 1 * state->camera_speed;
+        world->camera.offset.y += TILE_SIZE * state->camera_speed;
     }
 
     if (IsKeyDown(KEY_S)) {
-        world->screen_offset.y -= 1 * state->camera_speed;
+        world->camera.offset.y -= TILE_SIZE * state->camera_speed;
     }
 
     /* printf("mouse_pos: %f, %f\n", mouse_pos.x, mouse_pos.y); */
     if (IsKeyPressed(KEY_X)) {
-        world->spawn.x = (mouse_pos.x / TILE_SIZE) * TILE_SIZE;
-        world->spawn.y = (mouse_pos.y / TILE_SIZE) * TILE_SIZE;
+        int tile_x = mouse_pos.x / TILE_SIZE;
+        int tile_y = mouse_pos.y / TILE_SIZE;
+        world->spawn.x = tile_x * TILE_SIZE - state->world->camera.offset.x;
+        world->spawn.y = tile_y * TILE_SIZE - state->world->camera.offset.y;
     }
 }
 
 void editor_init(EditorState* state, World* world) {
     state->world = world;
-    state->camera_speed = 5;
+    state->camera_speed = 1;
     state->selected_tile = 0;
 }
 
@@ -83,6 +96,9 @@ void editor_grid_render(EditorState *state) {
 
 void render_possible_tile(EditorState* state) {
     if (mouse_pos.y >= HEIGHT - BOTTOM_BAR_HEIGHT) return;
+
+    Camera2D camera = state->world->camera;
+
     int tile_x = mouse_pos.x / TILE_SIZE;
     int tile_y = mouse_pos.y / TILE_SIZE;
     Color color = WHITE;
@@ -99,7 +115,7 @@ void render_possible_tile(EditorState* state) {
 void editor_render(EditorState* state) {
     /* editor_grid_render(state); */
     World* world = state->world;
-    tilemap_render(&world->tilemap, world->screen_offset);
+    tilemap_render(&world->tilemap, world->camera.offset);
     render_possible_tile(state);
     tile_selector_render(state);
 }

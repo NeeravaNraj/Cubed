@@ -12,7 +12,7 @@ link: compile
 	@echo -----------
 	@echo Linking....
 	@echo -----------
-	$(LD) -o $(BIN_DIR)/main.bin $(OBJ_FILES) -l raylib
+	$(LD) -o $(BIN_DIR)/main.bin $(OBJ_FILES) -L ./libs -l raylib -lm
 	@echo Done.
 
 compile: $(BUILD_DIR)

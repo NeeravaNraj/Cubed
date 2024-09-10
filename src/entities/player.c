@@ -1,5 +1,5 @@
-#include <raylib.h>
-#include <raymath.h>
+#include "../inc/raylib.h"
+#include "../inc/raymath.h"
 #include "../inc/common.h"
 #include "../inc/entities/player.h"
 

@@ -2,7 +2,7 @@
 #define EDITOR_H
 #include "../tiles.h"
 #include "../tilemap.h"
-#include <raylib.h>
+#include "../raylib.h"
 #include "../world.h"
 
 #define BOTTOM_BAR_HEIGHT 100

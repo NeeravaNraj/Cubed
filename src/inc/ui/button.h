@@ -1,7 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include <raylib.h>
+#include "../raylib.h"
 
 typedef struct {
     char* label;

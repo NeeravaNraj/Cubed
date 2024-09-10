@@ -9,9 +9,8 @@
 typedef struct Tilemap {
     HashMap map;
     Tile** around;
-
-    void (*render)();
 } Tilemap;
+
 void tilemap_init(Tilemap* tm);
 void tilemap_add_tile(Tilemap* tm, Tile* tile);
 Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position);

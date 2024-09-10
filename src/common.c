@@ -1,5 +1,4 @@
 #include "inc/common.h"
-#include <raylib.h>
 
 float minf(float a, float b) {
     return a < b ? a : b;

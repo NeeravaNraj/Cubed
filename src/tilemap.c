@@ -2,8 +2,8 @@
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <raylib.h>
 #include <unistd.h>
+#include "inc/raylib.h"
 #include "inc/tilemap.h"
 #include "inc/arena.h"
 #include "inc/common.h"

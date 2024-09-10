@@ -1,8 +1,8 @@
 #ifndef ENTITES_H
 #define ENTITES_H
 
-#include <raylib.h>
-#include "./tilemap.h"
+#include "raylib.h"
+#include "tilemap.h"
 
 typedef struct Entity {
     Vector2 position;

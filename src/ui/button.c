@@ -1,6 +1,5 @@
 #include "../inc/ui/button.h"
-#include <raylib.h>
-#include <raymath.h>
+#include "../inc/raylib.h"
 
 
 void render_button(Button* button) {

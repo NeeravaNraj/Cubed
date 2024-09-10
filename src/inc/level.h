@@ -1,11 +1,13 @@
 #ifndef LEVEL_H
 #define LEVEL_H
-#include <raylib.h>
-#include <stddef.h>
+
 #include <stdio.h>
-#include "./tiles.h"
-#include "tilemap.h"
+#include <stddef.h>
+
+#include "tiles.h"
 #include "world.h"
+#include "raylib.h"
+#include "tilemap.h"
 
 #define MAGIC 0xB18B00B2
 #define VERSION 0

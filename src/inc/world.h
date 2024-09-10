@@ -1,7 +1,8 @@
 #ifndef WORLD_H
 #define WORLD_H
-#include "./entities/player.h"
-#include <raylib.h>
+#include "common.h"
+#include "raylib.h"
+#include "entities/player.h"
 
 #define SKY_COLOR ((Color) { .r = 130, .g = 200, .b = 230, .a = 255 })
 
@@ -22,4 +23,5 @@ typedef struct {
     World* world;
 } EditorState;
 
+void load_assets(Assets* assets);
 #endif // WORLD_H

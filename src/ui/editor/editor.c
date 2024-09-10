@@ -1,9 +1,7 @@
 #include "../../inc/ui/editor.h"
 #include "../../inc/level.h"
-#include "../../inc/ui/button.h"
-#include <raylib.h>
-#include <raymath.h>
-#include <stdio.h>
+#include "../../inc/raylib.h"
+#include "../../inc/raymath.h"
 
 #define ROWS (HEIGHT / TILE_SIZE)
 #define COLS (WIDTH / TILE_SIZE)

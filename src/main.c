@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include <raylib.h>
+#include "inc/raylib.h"
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/entities.h"
@@ -12,6 +12,7 @@
 
 
 World world;
+Assets assets;
 EditorState editor_state;
 
 void init() {
@@ -24,16 +25,16 @@ void init() {
             .y =  -world.player.entity.position.y + (float)HEIGHT / 2,
         },
     };
-    init_player(&world.player);
+    load_assets(&assets);
     tilemap_init(&world.tilemap);
     read_level("test_level.cdb", &world, 0);
     editor_init(&editor_state, &world);
+    init_player(&world.player);
 
     world.player.entity.position = world.spawn;
 }
 
 void handle_events() {
-
     if (IsKeyPressed(KEY_P)) {
         world.edit_mode = !world.edit_mode;
         world.camera.target.x = (float)WIDTH / 2;
@@ -88,13 +89,11 @@ void render() {
 }
 
 int main() {
-    init();
     arena_init();
-
-
     InitWindow(WIDTH, HEIGHT, "Cubed");
-    SetTargetFPS(60);
+    init();
 
+    SetTargetFPS(60);
     while (!WindowShouldClose()) {
         ClearBackground(SKY_COLOR);
         float dt = GetFrameTime();

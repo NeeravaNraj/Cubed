@@ -15,7 +15,7 @@ World world;
 EditorState editor_state;
 
 void init() {
-    world.edit_mode = !false;
+    world.edit_mode = false;
     world.camera = (Camera2D){
         .zoom = 1,
         .offset = { .x = 0, .y = 0 },
@@ -26,22 +26,18 @@ void init() {
     };
     init_player(&world.player);
     tilemap_init(&world.tilemap);
-    /* world.spawn = (Vector2){ */
-    /*     .x = 100, */
-    /*     .y = 500 */
-    /* }; */
+    read_level("test_level.cdb", &world, 0);
+    editor_init(&editor_state, &world);
 
-    if (world.edit_mode) {
-        editor_init(&editor_state, &world);
-        world.camera.target.x = (float)WIDTH / 2;
-        world.camera.target.y = (float)HEIGHT / 2;
-    }
+    world.player.entity.position = world.spawn;
 }
 
 void handle_events() {
 
     if (IsKeyPressed(KEY_P)) {
         world.edit_mode = !world.edit_mode;
+        world.camera.target.x = (float)WIDTH / 2;
+        world.camera.target.y = (float)HEIGHT / 2;
         if (world.edit_mode) {
             int tile_x = world.camera.offset.x / TILE_SIZE;
             int tile_y = world.camera.offset.y / TILE_SIZE;
@@ -95,7 +91,6 @@ int main() {
     init();
     arena_init();
 
-    /* read_level("test_level.cdb", &world, 0); */
 
     InitWindow(WIDTH, HEIGHT, "Cubed");
     SetTargetFPS(60);

@@ -1,5 +1,5 @@
 CC:=gcc
-CFLAGS:=-c -g -m64 -I src/inc
+CFLAGS:=-c -Wall -Wextra -g -m64 -I src/inc
 SRC_FILES = $(shell find -type f -name "*.c")
 SRC_DIRS = $(shell find . -type d)
 OBJ_FILES = $(abspath $(addprefix $(BUILD_DIR)/, $(SRC_FILES:.c=.o)))

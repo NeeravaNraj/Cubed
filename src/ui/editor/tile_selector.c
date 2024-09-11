@@ -1,7 +1,8 @@
-#include "raylib.h"
+#include "../../inc/raylib.h"
 #include "../../inc/common.h"
 #include "../../inc/tiles.h"
 #include "../../inc/ui/editor.h"
+#include <stdint.h>
 
 #define PADDING 10
 #define ITEM_BOX_SIZE (BOTTOM_BAR_HEIGHT - PADDING * 2)
@@ -53,7 +54,7 @@ void tile_selector_render(EditorState* state) {
         (Color){ .r = 125, .g = 125, .b = 125, .a = 125 }
     );
 
-    for (int i = 0; i < EndTile; ++i) {
+    for (uint32_t i = 0; i < EndTile; ++i) {
         int x = i * ITEM_BOX_SIZE + PADDING * (i + 1);
         int y = HEIGHT - BOTTOM_BAR_HEIGHT + PADDING;
         Vector2 box_pos = { .x = x, .y = y, };

@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <unistd.h>
+#include "inc/hashmap.h"
 #include "inc/raylib.h"
 #include "inc/arena.h"
 #include "inc/common.h"
@@ -89,8 +91,9 @@ void render() {
 }
 
 int main() {
-    arena_init();
     InitWindow(WIDTH, HEIGHT, "Cubed");
+    printf("initted window\n");
+    arena_init();
     init();
 
     SetTargetFPS(60);

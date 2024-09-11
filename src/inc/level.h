@@ -1,6 +1,7 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
 
@@ -14,7 +15,7 @@
 
 
 typedef struct {
-    int magic;
+    uint32_t magic;
     int version;
     Vector2 spawn;
     Vector2 end;

@@ -15,7 +15,6 @@ typedef enum Tiles {
 typedef struct Tile {
     Tiles kind;
     Vector2 position;
-    /* int variant; */
 } Tile;
 
 void render_tile(Tile* tile, Vector2 offset);

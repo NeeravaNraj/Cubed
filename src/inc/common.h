@@ -25,5 +25,5 @@ float maxf(float a, float b);
 int min(int a, int b);
 int max(int a, int b);
 float lerpf(float t, float a, float b);
-
+Vector2 vec2(float x, float y);
 #endif // !COMMON_H

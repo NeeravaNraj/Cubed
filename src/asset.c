@@ -2,6 +2,7 @@
 #include "inc/common.h"
 #include "inc/world.h"
 #include "inc/raylib.h"
+#include <stdint.h>
 #include <stdio.h>
 
 void load_grass(Assets* assets) {
@@ -10,7 +11,7 @@ void load_grass(Assets* assets) {
     asset.len = 1;
 
     char buffer[32];
-    for (int i = 0; i < asset.len; ++i) {
+    for (uint8_t i = 0; i < asset.len; ++i) {
         sprintf(buffer, "assets/tiles/grass/%d.png", i); 
         asset.textures[i] = LoadTexture(buffer);
     }
@@ -24,7 +25,7 @@ void load_stone(Assets* assets) {
     asset.len = 2;
 
     char buffer[32];
-    for (int i = 0; i < asset.len; ++i) {
+    for (uint8_t i = 0; i < asset.len; ++i) {
         sprintf(buffer, "assets/tiles/stone/%d.png", i); 
         asset.textures[i] = LoadTexture(buffer);
     }
@@ -38,7 +39,7 @@ void load_end(Assets* assets) {
     asset.len = 1;
 
     char buffer[32];
-    for (int i = 0; i < asset.len; ++i) {
+    for (uint8_t i = 0; i < asset.len; ++i) {
         sprintf(buffer, "assets/tiles/end/%d.png", i); 
         asset.textures[i] = LoadTexture(buffer);
     }

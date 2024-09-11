@@ -12,7 +12,7 @@ link: compile
 	@echo -----------
 	@echo Linking....
 	@echo -----------
-	$(LD) -o $(BIN_DIR)/main.bin $(OBJ_FILES) -L ./libs -l raylib -lm
+	$(LD) -fstack-protector-all -o $(BIN_DIR)/main.bin $(OBJ_FILES) -L ./libs -l:libraylib.a -lm
 	@echo Done.
 
 compile: $(BUILD_DIR)

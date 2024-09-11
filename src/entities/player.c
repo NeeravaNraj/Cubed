@@ -58,7 +58,7 @@ void player_update(Entity* entity, Tilemap* tm, float dt) {
     Tile** tiles_around = tilemap_tiles_around(tm, entity->position);
     for (int i = 0; i < 9; ++i) {
         Tile* tile = tiles_around[i];
-        if (!tile) continue;
+        if (!tile) break;
         Rectangle physics_rect = {
             .x = tile->position.x,
             .y = tile->position.y,
@@ -86,7 +86,7 @@ void player_update(Entity* entity, Tilemap* tm, float dt) {
     tiles_around = tilemap_tiles_around(tm, entity->position);
     for (int i = 0; i < 9; ++i) {
         Tile* tile = tiles_around[i];
-        if (!tile) continue;
+        if (!tile) break;
         Rectangle physics_rect = {
             .x = tile->position.x,
             .y = tile->position.y,

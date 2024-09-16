@@ -22,6 +22,7 @@ void add_tile(EditorState* state, Vector2 position) {
     Tile* tile = arena_alloc(sizeof(Tile));
     tile->kind = state->selected_tile;
     tile->position = position;
+    tile->variant = state->selected_variant;
     tilemap_add_tile(&state->world->tilemap, tile);
 }
 
@@ -81,6 +82,7 @@ void editor_init(EditorState* state, World* world) {
     state->world = world;
     state->camera_speed = 1;
     state->selected_tile = 0;
+    state->selected_variant = 0;
 }
 
 void editor_grid_render(EditorState *state) {

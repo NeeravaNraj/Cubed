@@ -22,7 +22,7 @@ Node* node_new(size_t size) {
     Node* node = ARENA_MALLOC(sizeof(Node));
 
     node->used = 0;
-    node->capacity = 0;
+    node->capacity = size;
     node->next = NULL;
     node->pool = ARENA_MALLOC(size);
 

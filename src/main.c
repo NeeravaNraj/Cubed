@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <unistd.h>
-#include "inc/hashmap.h"
-#include "inc/raylib.h"
 #include "inc/arena.h"
-#include "inc/common.h"
-#include "inc/entities.h"
 #include "inc/level.h"
-#include "inc/tilemap.h"
 #include "inc/tiles.h"
+#include "inc/world.h"
+#include "inc/raylib.h"
+#include "inc/common.h"
+#include "inc/tilemap.h"
+#include "inc/entities.h"
 #include "inc/ui/editor.h"
 #include "inc/entities/player.h"
-#include "inc/world.h"
 
 
 World world;
@@ -18,7 +17,7 @@ Assets assets;
 EditorState editor_state;
 
 void init() {
-    world.edit_mode = false;
+    world.edit_mode = !false;
     world.camera = (Camera2D){
         .zoom = 1,
         .offset = { .x = 0, .y = 0 },
@@ -92,7 +91,6 @@ void render() {
 
 int main() {
     InitWindow(WIDTH, HEIGHT, "Cubed");
-    printf("initted window\n");
     arena_init();
     init();
 
@@ -103,7 +101,7 @@ int main() {
         handle_events();
         update(dt);
         BeginDrawing();
-            draw_tile(SpawnPoint, world.spawn, world.camera.offset);
+            draw_tile(SpawnPoint, 0, world.spawn, world.camera.offset);
             render();
         EndDrawing();
     }

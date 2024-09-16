@@ -15,7 +15,7 @@ typedef  struct {
 typedef struct {
     Asset grass;
     Asset stone;
-    Asset end;
+    Asset small_decor;
 } Assets;
 
 extern Assets assets;

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -22,7 +23,7 @@ Vector2 TILE_SIZEV = { .x = TILE_SIZE, .y = TILE_SIZE };
 
 void tilemap_init(Tilemap* tm) {
     hashmap_init(&tm->map);
-    tm->around = arena_alloc(sizeof(Tiles) * 9);
+    tm->around = arena_alloc(sizeof(Tile) * 9);
 }
 
 void tilemap_add_tile(Tilemap* tm, Tile* tile) {

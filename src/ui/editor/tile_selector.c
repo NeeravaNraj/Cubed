@@ -68,7 +68,7 @@ void tile_selector_render(EditorState* state) {
         DrawRectangleV(
             box_pos,
             (Vector2) { .x = ITEM_BOX_SIZE, .y = ITEM_BOX_SIZE, },
-            state->selected_tile == i ? ITEM_BOX_BG_SELECTED : color
+            state->selected_variant == i ? ITEM_BOX_BG_SELECTED : color
         );
 
         draw_tile(

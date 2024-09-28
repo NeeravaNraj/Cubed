@@ -3,20 +3,11 @@
 
 #include "./raylib.h"
 #include <unistd.h>
+#include "asset.h"
+
 #define WIDTH 1280
 #define HEIGHT 720
 #define TILE_SIZE 48
-
-typedef  struct {
-    Texture2D* textures;
-    size_t len;
-} Asset;
-
-typedef struct {
-    Asset grass;
-    Asset stone;
-    Asset small_decor;
-} Assets;
 
 extern Assets assets;
 

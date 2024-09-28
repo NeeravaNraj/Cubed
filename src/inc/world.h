@@ -17,14 +17,6 @@ typedef struct {
     bool edit_mode;
 } World;
 
-typedef struct {
-    Vector2* itemboxes;
-    Tiles selected_tile;
-    char selected_variant;
-    float camera_speed;
-    World* world;
-} EditorState;
-
 void load_assets(Assets* assets);
 Asset* get_asset(Tiles kind);
 #endif // WORLD_H

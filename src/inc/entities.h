@@ -10,7 +10,7 @@ typedef struct Entity {
     Vector2 size;
     void* implementor;
 
-    void (*update)(struct Entity*, Tilemap*, float);
+    void (*update)(struct Entity*, Tilemap*, Vector2, float);
     void (*render)(struct Entity*, Vector2);
 } Entity;
 

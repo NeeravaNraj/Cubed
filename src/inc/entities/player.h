@@ -6,8 +6,11 @@
 
 typedef struct Player {
     Entity entity;
+    char jump;
     char movement[2];
+    float move_speed;
 } Player;
 
-void init_player(Player* player);
+void player_init(Player* player);
+void player_jump(Player* player);
 #endif // !PLAYER_H

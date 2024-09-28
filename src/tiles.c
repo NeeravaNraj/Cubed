@@ -13,7 +13,7 @@
 
 
 void render_grass_platform(Vector2 position, char variant, Vector2 offset) {
-    Texture2D asset = assets.grass.textures[0];
+    Texture2D asset = assets.tile_assets.grass.textures[0];
     Rectangle src = {
         .x = variant * TEXTURE_SIZE,
         .y = 0,
@@ -30,7 +30,7 @@ void render_grass_platform(Vector2 position, char variant, Vector2 offset) {
 }
 
 void render_stone_platform(Vector2 position, char variant, Vector2 offset) {
-    Texture2D asset = assets.stone.textures[1];
+    Texture2D asset = assets.tile_assets.stone.textures[0];
     Rectangle src = {
         .x = variant * TEXTURE_SIZE,
         .y = 0,

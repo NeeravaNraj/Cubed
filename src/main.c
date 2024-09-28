@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include "inc/arena.h"
 #include "inc/level.h"
@@ -30,12 +29,13 @@ void init() {
     tilemap_init(&world.tilemap);
     read_level("test_level.cdb", &world, 0);
     editor_init(&editor_state, &world);
-    init_player(&world.player);
+    player_init(&world.player);
 
     world.player.entity.position = world.spawn;
 }
 
 void handle_events() {
+    /* printf("offset = %f, %f\n", world.camera.offset.x, world.camera.offset.y); */
     if (IsKeyPressed(KEY_P)) {
         world.edit_mode = !world.edit_mode;
         world.camera.target.x = (float)WIDTH / 2;
@@ -64,8 +64,7 @@ void handle_events() {
         }
 
         if (IsKeyPressed(KEY_SPACE)) {
-            float velocity = world.player.entity.velocity.y;
-            world.player.entity.velocity.y = minf(velocity - 7, 5);
+            player_jump(&world.player);
         }
     }
 }
@@ -73,7 +72,11 @@ void handle_events() {
 void update(float dt) {
     if (!world.edit_mode) {
         Entity player = world.player.entity;
-        world.player.entity.update(&world.player.entity, &world.tilemap, dt);
+        world.player.entity.update(
+            &world.player.entity,
+            &world.tilemap,
+            world.camera.offset, dt
+        );
         float t = 0.1;
         world.camera.offset.x = lerpf(t, world.camera.offset.x, -player.position.x + (float)WIDTH / 2 - 250);
         world.camera.offset.y = lerpf(t, world.camera.offset.y, -player.position.y + (float)HEIGHT / 2);

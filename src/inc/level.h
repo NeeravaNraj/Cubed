@@ -11,15 +11,16 @@
 #include "tilemap.h"
 
 #define MAGIC 0xB18B00B2
-#define VERSION 0
+#define VERSION 1
 
 
 typedef struct {
-    uint32_t magic;
+    int magic;
     int version;
     Vector2 spawn;
     Vector2 end;
     size_t tile_length;
+    size_t offgrid_tile_length;
 } Headers;
 
 typedef struct {
@@ -27,6 +28,20 @@ typedef struct {
     char* level_name;
 } Properties;
 
+void handle_err(bool cond, char* loc, char* message);
+
 void write_level(char* name, World* world);
-void read_level(char* filename, World* world, int version);
+void read_level(char* filename, World* world);
+
+// ---- LEVEL READERS ----
+
+// ----   V0 READER   ----
+void header_reader_v0(FILE* file, Headers* headers);
+void tile_reader_v0(FILE* file, Headers* headers, World* world);
+void properties_reader_v0(FILE* file, Properties* properties);
+
+// ----   V1 READER   ----
+void header_reader_v1(FILE* file, Headers* headers);
+void tile_reader_v1(FILE* file, Headers* headers, World* world);
+void properties_reader_v1(FILE* file, Properties* properties);
 #endif // LEVEL_H

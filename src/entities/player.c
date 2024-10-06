@@ -170,8 +170,5 @@ void player_init(Player* player) {
     player->entity.velocity.x = player->entity.velocity.y = 0;
     player->entity.size.x = player->entity.size.y = PLAYER_SIZE;
 
-    player->entity.render = &player_render;
-    player->entity.update = &player_update;
-
     player->movement[0] = player->movement[1] = false;
 }

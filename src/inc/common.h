@@ -11,6 +11,7 @@
 #define TEXTURE_SIZE 32
 
 extern Assets assets;
+extern float FRAME_RATE;
 
 float minf(float a, float b);
 float maxf(float a, float b);

@@ -1,3 +1,4 @@
 #!/bin/bash
 
-./build/bin/main.bin
+make
+./build/bin/main.bin $1

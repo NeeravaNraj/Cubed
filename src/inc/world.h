@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 #include "common.h"
+#include "offgrid.h"
 #include "raylib.h"
 #include "entities/player.h"
 
@@ -9,8 +10,10 @@
 
 typedef struct {
     Player player;
-    Tilemap tilemap;
     Camera2D camera;
+
+    Tilemap tilemap;
+    OffgridTiles offgrid_tiles;
 
     Vector2 spawn;
     Vector2 end;

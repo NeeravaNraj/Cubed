@@ -8,6 +8,7 @@
 #define WIDTH 1280
 #define HEIGHT 720
 #define TILE_SIZE 48
+#define TEXTURE_SIZE 32
 
 extern Assets assets;
 

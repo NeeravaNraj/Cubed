@@ -4,10 +4,6 @@
 #include "tiles.h"
 #include <unistd.h>
 
-typedef unsigned char AssetFlag;
-extern const AssetFlag IsTile;
-extern const AssetFlag IsOffgridTile;
-
 typedef struct {
     Texture2D* textures;
     size_t len;

@@ -20,6 +20,8 @@ typedef struct {
     float camera_speed;
 
     Tiles selected_tile;
+    TileType selected_tile_type;
+    
     Vector2 mouse_pos;
     Vector2* itemboxes;
 } EditorState;

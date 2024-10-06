@@ -4,9 +4,15 @@
 #include "raylib.h"
 #include <stdint.h>
 
+typedef enum TileType {
+    OngridTile = 0,
+    OffgridTile,
+} TileType;
+
 typedef enum Tiles {
     GrassPlatform = 0,
     StonePlatform,
+    SmallDecor,
     EndTile,
 
     EndPoint,

@@ -20,12 +20,25 @@
 /*     }, */
 /* }; */
 
+void editor_init(EditorState* state, World* world) {
+    state->world = world;
+    state->camera_speed = 1;
+    state->selected_tile = 0;
+    state->selected_variant = 0;
+    state->selected_tile_type = OngridTile;
+    menu_init(&state->menu);
+}
+
 void add_tile(EditorState* state, Vector2 position) {
     Tile* tile = arena_alloc(sizeof(Tile));
     tile->kind = state->selected_tile;
     tile->position = position;
     tile->variant = state->selected_variant;
-    tilemap_add_tile(&state->world->tilemap, tile);
+    if (state->selected_tile_type == OngridTile) {
+        tilemap_add_tile(&state->world->tilemap, tile);
+    } else {
+        offgrid_add_tile(&state->world->offgrid_tiles, tile);
+    }
 }
 
 
@@ -89,14 +102,6 @@ void editor_handle_events(EditorState* state) {
     }
 }
 
-void editor_init(EditorState* state, World* world) {
-    state->world = world;
-    state->camera_speed = 1;
-    state->selected_tile = 0;
-    state->selected_variant = 0;
-    menu_init(&state->menu);
-}
-
 void editor_grid_render(EditorState *state) {
     for (int i = 1; i < ROWS + 1; ++i) {
         for (int j = 1; j < COLS + 1; ++j) {
@@ -135,6 +140,8 @@ void render_tile_pos() {
 void editor_render(EditorState* state) {
     World* world = state->world;
     tilemap_render(&world->tilemap, world->camera.offset);
+    offgrid_render(&world->offgrid_tiles, world->camera.offset);
+
     if (state->menu.opened) { render_menu(state); }
 
     render_tile_pos();

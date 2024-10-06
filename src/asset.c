@@ -6,13 +6,11 @@
 #include "inc/raylib.h"
 #include <stdint.h>
 
-const AssetFlag IsTile = 1;
-const AssetFlag IsOffgridTile = 2;
 
 void load_grass(Assets* assets) {
     Asset asset;
     asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = IsTile;
+    asset.asset_flags = OngridTile;
     asset.kind = GrassPlatform;
     asset.len = 9;
 
@@ -23,7 +21,7 @@ void load_grass(Assets* assets) {
 void load_stone(Assets* assets) {
     Asset asset;
     asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = IsTile;
+    asset.asset_flags = OngridTile;
     asset.kind = StonePlatform;
     asset.len = 9;
 
@@ -34,8 +32,8 @@ void load_stone(Assets* assets) {
 void load_small_decor(Assets* assets) {
     Asset asset;
     asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = IsOffgridTile;
-    asset.kind = 0;
+    asset.asset_flags = OffgridTile;
+    asset.kind = SmallDecor;
     asset.len = 4;
 
     asset.textures[0] = LoadTexture("assets/decor/small_decor.png");

@@ -1,6 +1,5 @@
 #include "../../inc/common.h"
 #include "../../inc/ui/editor.h"
-#include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
 
@@ -16,7 +15,7 @@ void menu_init(Menu* menu) {
     menu->opened = false;
 }
 
-void render_item(EditorState* state, Asset asset, int i) {
+void render_item(EditorState* state, Asset asset, char variant, int i, Vector2 offset) {
     float menu_x = ((float)WIDTH / 2) - (MENU_WIDTH / 2);
     float menu_y = ((float)HEIGHT / 2) - (MENU_HEIGHT / 2);
 
@@ -28,9 +27,12 @@ void render_item(EditorState* state, Asset asset, int i) {
         dest_y += ITEM_SIZE;
     }
 
+    dest_y += offset.y;
+    dest_x += offset.x;
+
     Texture2D texture = asset.textures[0];
     Rectangle src = {
-        .x = 0, .y = 0,
+        .x = TEXTURE_SIZE * variant, .y = 0,
         .width = (float)texture.width / asset.len,
         .height = (float)texture.height
     };
@@ -56,9 +58,14 @@ void render_item(EditorState* state, Asset asset, int i) {
         };
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (asset.asset_flags & IsTile) {
+            if (asset.asset_flags & OngridTile) {
                 state->selected_tile = asset.kind;
                 state->selected_variant = 0;
+                state->selected_tile_type = OngridTile;
+            } else if (asset.asset_flags & OffgridTile) {
+                state->selected_tile = asset.kind;
+                state->selected_variant = variant;
+                state->selected_tile_type = OffgridTile;
             }
         }
     }
@@ -72,12 +79,19 @@ void render_item(EditorState* state, Asset asset, int i) {
 }
 
 void render_items(EditorState* state) {
-    size_t assets_len = sizeof(assets.tile_assets) / sizeof(Asset);
-    Asset* asset_list = (Asset*)&assets.tile_assets;
+    size_t tile_assets_len = sizeof(assets.tile_assets) / sizeof(Asset);
+    Asset* tile_asset_list = (Asset*)&assets.tile_assets;
+    Vector2 offset = vec2(0, 0);
 
-    for (int i = 0; i < assets_len; ++i) {
-        Asset asset = asset_list[i];
-        render_item(state, asset, i);
+    for (int i = 0; i < tile_assets_len; ++i) {
+        Asset asset = tile_asset_list[i];
+        render_item(state, asset, 0, i, offset);
+    }
+
+    offset.y += ITEM_SIZE * 2;
+    for (int i = 0; i < assets.decor_assets.small_decor.len; ++i) {
+        Asset asset = assets.decor_assets.small_decor;
+        render_item(state, asset, i, i, offset);
     }
 }
 

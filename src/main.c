@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include "inc/arena.h"
 #include "inc/level.h"
+#include "inc/offgrid.h"
 #include "inc/tiles.h"
 #include "inc/world.h"
 #include "inc/raylib.h"
@@ -27,7 +28,8 @@ void init() {
     };
     load_assets(&assets);
     tilemap_init(&world.tilemap);
-    read_level("test_level.cdb", &world, 0);
+    read_level("test_level.cdb", &world);
+    offgrid_init(&world.offgrid_tiles);
     editor_init(&editor_state, &world);
     player_init(&world.player);
 
@@ -84,9 +86,10 @@ void update(float dt) {
 }
 
 void render() {
-    world.player.entity.render(&world.player.entity, world.camera.offset);
     if (!world.edit_mode) {
         tilemap_render(&world.tilemap, world.camera.offset);
+        offgrid_render(&world.offgrid_tiles, world.camera.offset);
+        world.player.entity.render(&world.player.entity, world.camera.offset);
     } else {
         editor_render(&editor_state);
     }
@@ -111,6 +114,7 @@ int main() {
     
     CloseWindow();
 
+    offgrid_deinit(&world.offgrid_tiles);
     arena_deinit();
     return 0;
 }

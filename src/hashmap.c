@@ -1,4 +1,3 @@
-#include "inc/hashmap.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,8 +5,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "inc/hashmap.h"
+
 
 #define HASHMAP_DIRECTORY_LEN(map) ((1 << (map)->directory.global_depth))
+
 
 size_t hash(const char* str, size_t depth) {
     uint64_t hash = 7919;
@@ -148,7 +150,7 @@ void hashmap_update(HashMap* map, const char* key, void* value) {
     }
 }
 
-void hashmap_delete(HashMap* map, const char* key) {
+bool hashmap_delete(HashMap* map, const char* key) {
     size_t hash_index = hash(key, map->directory.global_depth);
     Bucket* bucket = map->directory.buckets[hash_index];
     size_t key_len = strlen(key);
@@ -160,8 +162,11 @@ void hashmap_delete(HashMap* map, const char* key) {
             strncmp(key, entry->key, entry->key_len) == 0
         ) {
             bucket->entries[i] = bucket->entries[--bucket->len];
+            return true;
         }
     }
+
+    return false;
 }
 
 void hashmap_deinit(HashMap* map) {

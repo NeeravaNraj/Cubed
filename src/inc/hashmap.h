@@ -55,7 +55,7 @@ void hashmap_init(HashMap* map);
 void hashmap_insert(HashMap* map, const char* key, void* value);
 const Entry* hashmap_get(HashMap* map, const char* key);
 void hashmap_update(HashMap* map, const char* key, void* value);
-void hashmap_delete(HashMap* map, const char* key);
+bool hashmap_delete(HashMap* map, const char* key);
 void hashmap_deinit(HashMap* map);
 void hashmap_init_iterator(HashMapIterator* it, HashMap* map);
 Entry* hashmap_next_entry(HashMapIterator* it);

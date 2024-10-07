@@ -58,16 +58,30 @@ void render_item(EditorState* state, Asset asset, char variant, int i, Vector2 o
         };
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            state->selected_tile = asset.kind;
             if (asset.asset_flags & OngridTile) {
-                state->selected_tile = asset.kind;
                 state->selected_variant = 0;
                 state->selected_tile_type = OngridTile;
             } else if (asset.asset_flags & OffgridTile) {
-                state->selected_tile = asset.kind;
                 state->selected_variant = variant;
                 state->selected_tile_type = OffgridTile;
             }
         }
+    }
+
+    Color selected = { .r = 100, .g = 200, .b = 0, .a = 80 };
+    if (
+        state->selected_tile_type == OngridTile &&
+        asset.asset_flags & OngridTile &&
+        i == state->selected_tile
+    ) {
+        bounding_rect_color = selected;
+    } else if (
+        state->selected_tile_type == OffgridTile &&
+        asset.asset_flags & OffgridTile &&
+        state->selected_variant == variant
+    ) {
+        bounding_rect_color = selected;
     }
 
     DrawRectangle(

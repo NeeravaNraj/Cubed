@@ -61,6 +61,25 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
 #undef TOTAL
 }
 
+bool tilemap_remove_tile(Tilemap* tm, Vector2 position) {
+    int tile_x = position.x / TILE_SIZE;
+    int tile_y = position.y / TILE_SIZE;
+
+    size_t x_len = snprintf(NULL, 0, "%d", tile_x);
+    size_t y_len = snprintf(NULL, 0, "%d", tile_y);
+#define TOTAL (x_len + y_len + 2)
+    char* key = arena_alloc(TOTAL);
+    int printed = snprintf(
+        key, TOTAL,
+        "%d%c%d",
+        tile_x, COORD_DELIM, tile_y
+    );
+    assert(printed == TOTAL - 1);
+#undef TOTAL
+
+    return hashmap_delete(&tm->map, key);
+}
+
 Tile** tilemap_tiles_around(Tilemap* tm, Vector2 position) {
     int tile_x = position.x / TILE_SIZE;
     int tile_y = position.y / TILE_SIZE;

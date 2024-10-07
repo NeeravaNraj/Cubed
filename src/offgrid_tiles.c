@@ -18,6 +18,24 @@ void offgrid_add_tile(OffgridTiles* off_tiles, Tile* tile) {
     Vec_push(off_tiles->tiles, tile); // NOLINT
 }
 
+
+void offgrid_remove_tile(OffgridTiles* off_tiles, Vector2 position) {
+    int tile_x = position.x / TILE_SIZE;
+    int tile_y = position.y / TILE_SIZE;
+
+    position.x = tile_x * TILE_SIZE;
+    position.y = tile_y * TILE_SIZE;
+
+    for (int i = 0; i < Vec_length(off_tiles->tiles); ++i) {
+        Tile* tile = off_tiles->tiles[i];
+        if (tile->position.x == position.x && tile->position.y == position.y) {
+            Vec_delete(off_tiles->tiles, i); // NOLINT
+            break;
+        }
+    }
+}
+
+
 void offgrid_render(OffgridTiles* off_tiles, Vector2 offset) {
     for (int i = 0; i < Vec_length(off_tiles->tiles); ++i) {
         Tile* tile = off_tiles->tiles[i];

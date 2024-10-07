@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 typedef enum TileType {
-    OngridTile = 0,
+    OngridTile = 1,
     OffgridTile,
 } TileType;
 

@@ -8,6 +8,11 @@
 
 #define BOTTOM_BAR_HEIGHT 100
 
+typedef enum EditorMode {
+    Selection,
+    Editing,
+} EditorMode;
+
 typedef struct {
     bool opened;
 } Menu;
@@ -24,6 +29,8 @@ typedef struct {
     
     Vector2 mouse_pos;
     Vector2* itemboxes;
+
+    EditorMode mode;
 } EditorState;
 
 void editor_init(EditorState* state, World* world);

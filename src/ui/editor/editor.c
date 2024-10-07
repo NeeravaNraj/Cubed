@@ -13,8 +13,7 @@
 /*     .position = { .x = 20, .y = HEIGHT - BOTTOM_BAR_HEIGHT - 50 }, */
 /*     .style = { */
 /*         .font_size = 16, */
-/*         .font_color = WHITE, */
-/*         .background_color = { .r = 240, .g = 130, .b = 100, .a = 255 }, */
+/*         .font_color = WHITE, */ /*         .background_color = { .r = 240, .g = 130, .b = 100, .a = 255 }, */
 /*         .border_size = 8, */
 /*         .border_color = { .r = 200, .g = 100, .b = 80, .a = 255 }, */
 /*     }, */
@@ -22,6 +21,7 @@
 
 void editor_init(EditorState* state, World* world) {
     state->world = world;
+    state->mode = Editing;
     state->camera_speed = 1;
     state->selected_tile = 0;
     state->selected_variant = 0;
@@ -38,6 +38,13 @@ void add_tile(EditorState* state, Vector2 position) {
         tilemap_add_tile(&state->world->tilemap, tile);
     } else {
         offgrid_add_tile(&state->world->offgrid_tiles, tile);
+    }
+}
+
+void remove_tile(EditorState* state, Vector2 position) {
+    bool removed = tilemap_remove_tile(&state->world->tilemap, position);
+    if (!removed) {
+        offgrid_remove_tile(&state->world->offgrid_tiles, position);
     }
 }
 
@@ -65,6 +72,10 @@ void editor_handle_events(EditorState* state) {
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
         add_tile(state, tile_pos);
+    }
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
+        remove_tile(state, tile_pos);
     }
 
     if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyDown(KEY_S)) {
@@ -137,10 +148,20 @@ void render_tile_pos() {
     DrawText(buffer, 0, 0, 24, BLACK);
 }
 
+void render_selected_tile(EditorState* state) {
+    Vector2 pos = vec2(10, HEIGHT - TILE_SIZE - 10);
+    draw_tile(
+        state->selected_tile,
+        state->selected_variant,
+        pos, vec2(0, 0)
+    );
+}
+
 void editor_render(EditorState* state) {
     World* world = state->world;
     tilemap_render(&world->tilemap, world->camera.offset);
     offgrid_render(&world->offgrid_tiles, world->camera.offset);
+    render_selected_tile(state);
 
     if (state->menu.opened) { render_menu(state); }
 

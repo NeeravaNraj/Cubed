@@ -9,6 +9,7 @@
 #define GRAVITY (0.4f)
 #define TERMINAL_VELOCITY 20
 #define MAX_JUMPS (2)
+#define JUMP_HEIGHT 7.0
 
 typedef enum {
     None,
@@ -71,7 +72,12 @@ void player_render(Player* player, Vector2 offset) {
 void player_jump(Player *player) {
     if (player->jump == MAX_JUMPS) return;
     float velocity = player->entity.velocity.y;
-    player->entity.velocity.y = minf(velocity - 7, 5);
+    if (player->attached_platform) {
+        player->entity.velocity.y = -JUMP_HEIGHT;
+    } else {
+        player->entity.velocity.y = velocity - JUMP_HEIGHT;
+    }
+    player->attached_platform = NULL;
     player->jump += 1;
 }
 
@@ -171,7 +177,11 @@ void handle_moving_platforms_collision(
                 if (!tile) break;
                 Rectangle physics_rect = rect_from_tile(tile);
                 if (CheckCollisionRecs(player_rect, physics_rect)) {
-                    collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
+                    if (player->attached_platform) {
+                        entity->position.y = tile->position.y - player_rect.height;
+                    } else {
+                        collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
+                    }
                 }
             }
         } else {
@@ -180,11 +190,15 @@ void handle_moving_platforms_collision(
                 if (!tile) break;
                 Rectangle physics_rect = rect_from_tile(tile);
                 if (CheckCollisionRecs(player_rect, physics_rect)) {
-                    if (collide_dir == None) {
+                    if (!player->attached_platform) {
                         handle_axis_collision(player, player_rect, physics_rect, axis);
                     }
                 }
             }
+        }
+
+        if (axis == 0 && platform == player->attached_platform) {
+            entity->position.x += platform->velocity.x;
         }
         if ((collide_dir & Up) || (collide_dir & Down)) {
             entity->velocity.y = 0;
@@ -193,10 +207,8 @@ void handle_moving_platforms_collision(
         if (collide_dir & Down) {
             player->jump = 0;
             player->move_speed = 4.5;
-            entity->position.x += platform->velocity.x;
-            /* entity->position.y += platform->velocity.y; */
+            player->attached_platform = platform;
         }
-        /* printf("Collision: %d\n", collide_dir); */
     }
 }
 
@@ -212,17 +224,11 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
 
     entity->velocity.x = (player->movement[1] - player->movement[0]) * player->move_speed;
     entity->position.x += entity->velocity.x;
-    /* player_render(player, offset); */
     handle_tilemap_collision(player, tm, move_direction, 0);
-    /* player_render(player, offset); */
     handle_moving_platforms_collision(player, mplts, move_direction, 0);
-    /* player_render(player, offset); */
     entity->position.y += entity->velocity.y;
-    /* player_render(player, offset); */
     collide_dir = handle_tilemap_collision(player, tm, move_direction, 1);
-    /* player_render(player, offset); */
     handle_moving_platforms_collision(player, mplts, move_direction, 1);
-    /* player_render(player, offset); */
 
     entity->velocity.y = minf(TERMINAL_VELOCITY, entity->velocity.y + GRAVITY);
     if ((collide_dir & Up) || (collide_dir & Down)) {
@@ -232,8 +238,8 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
     if (collide_dir & Down) {
         player->jump = 0;
         player->move_speed = 4.5;
+        player->attached_platform = NULL;
     }
-    /* player_render(player, offset); */
 }
 
 void player_init(Player* player) {
@@ -242,6 +248,7 @@ void player_init(Player* player) {
     player->entity.position.x = player->entity.position.y = 0;
     player->entity.velocity.x = player->entity.velocity.y = 0;
     player->entity.size.x = player->entity.size.y = PLAYER_SIZE;
+    player->attached_platform = NULL;
 
     player->movement[0] = player->movement[1] = false;
 }

@@ -10,6 +10,7 @@ typedef struct Player {
     char jump;
     char movement[2];
     float move_speed;
+    MovingPlatform* attached_platform;
 } Player;
 
 void player_init(Player* player);

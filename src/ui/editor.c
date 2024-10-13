@@ -180,7 +180,7 @@ void editor_handle_events(EditorState* state) {
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
             Vector2 tile_coords = to_tile_space(tile_pos);
-            movpltstate_process_steps(mp_state, tile_pos);
+            movpltstate_process_steps(mp_state, tile_coords);
         }
 
         if (mp_state->step == 2) {
@@ -236,9 +236,9 @@ void render_possible_tile(EditorState* state, Color color) {
     color.a = 120;
 
     DrawRectangle(
-        (tile_x * TILE_SIZE) - 2,
-        (tile_y * TILE_SIZE) - 2,
-        TILE_SIZE + 4, TILE_SIZE,
+        (tile_x * TILE_SIZE),
+        (tile_y * TILE_SIZE),
+        TILE_SIZE, TILE_SIZE,
         color
     );
 }

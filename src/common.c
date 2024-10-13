@@ -2,6 +2,7 @@
 #include "inc/common.h"
 #include "inc/raylib.h"
 #include <math.h>
+#include <unistd.h>
 
 float minf(float a, float b) {
     return a < b ? a : b;
@@ -61,4 +62,20 @@ Rectangle rect_from_tile(Tile* tile) {
         .width = TILE_SIZE,
         .height = TILE_SIZE,
     };
+}
+
+
+int int_in_array(int* array, size_t length, int value) {
+    for (int i = 0; i < length; ++i) {
+        if (value == array[i]) return i;
+    }
+    return -1;
+}
+
+
+int float_in_array(float* array, size_t length, float value) {
+    for (int i = 0; i < length; ++i) {
+        if (value == array[i]) return i;
+    }
+    return -1;
 }

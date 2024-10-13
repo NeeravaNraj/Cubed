@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <stdio.h>
 #include <unistd.h>
 #include "inc/tiles.h"
 #include "inc/common.h"
@@ -24,6 +25,7 @@ size_t moving_platforms_add(MovingPlatforms* plt, Vector2 start, Vector2 end, fl
     platform.speed = speed;
     platform.tiles = NULL;
     platform.tile_start = NULL;
+    platform.size = vec2(0, 0);
     Vec_init(platform.tiles, 8, NULL); // NOLINT
     Vec_init(platform.tile_start, 8, NULL);
     Vec_push(plt->platforms, platform);
@@ -33,8 +35,32 @@ size_t moving_platforms_add(MovingPlatforms* plt, Vector2 start, Vector2 end, fl
 
 void moving_platforms_add_tile(MovingPlatforms* plt, size_t i, Tile* tile) {
     MovingPlatform* platform = &plt->platforms[i];
+
     Vec_push(platform->tiles, tile); // NOLINT
     Vec_push(platform->tile_start, tile->position);
+
+    const size_t total_tiles = Vec_length(platform->tiles);
+    float table[total_tiles];
+    int counter = 0;
+
+    int x_counts = 0;
+    int y_counts = 1;
+
+
+    for (int i = 0; i < total_tiles; ++i) {
+        Tile* tile = platform->tiles[i];
+        int x_exists = float_in_array(table, counter, tile->position.x);
+
+        if (x_exists != -1) {
+            y_counts++;
+        } else {
+            table[counter++] = tile->position.x;
+            x_counts++;
+        }
+    }
+
+    platform->size.x = x_counts * TILE_SIZE;
+    platform->size.y = y_counts * TILE_SIZE;
 }
 
 void moving_platforms_update(MovingPlatforms* plt, float dt) {
@@ -109,9 +135,22 @@ void moving_platforms_update(MovingPlatforms* plt, float dt) {
 
 void moving_platforms_render(MovingPlatforms* plt, Vector2 offset) {
     for (int i = 0; i < Vec_length(plt->platforms); ++i) {
-        MovingPlatform platform = plt->platforms[i];
-        for (int j = 0; j < Vec_length(platform.tiles); ++j) {
-            Tile* tile = platform.tiles[j];
+        MovingPlatform* platform = &plt->platforms[i];
+        /* Vector2 mid_point = { */
+        /*     .x = platform->start_position.x + ((platform->end_position.x + platform->size.x) - platform->start_position.x) / 2, */
+        /*     .y = platform->start_position.y + (platform->end_position.y - platform->start_position.y) / 2, */
+        /* }; */
+        /* float r = sqrtf(powf(platform->end_position.x - platform->start_position.x, 2) + powf(platform->end_position.y - platform->start_position.y, 2)); */
+        /* float extra = maxf(platform->size.x, platform->size.y); */
+        /* if (r < extra) { r += extra; } */
+        /* Color color = RED; */
+        /* color.a = 180; */
+        /* DrawCircle(mid_point.x + offset.x, mid_point.y + offset.y, r, color); */
+        /* DrawCircle(platform->start_position.x + offset.x, platform->start_position.y + offset.y, 10, ORANGE); */
+        /* DrawCircle(mid_point.x + offset.x, mid_point.y + offset.y, 10, WHITE); */
+        /* DrawCircle(platform->end_position.x + platform->size.x + offset.x, platform->end_position.y + offset.y, 10, ORANGE); */
+        for (int j = 0; j < Vec_length(platform->tiles); ++j) {
+            Tile* tile = platform->tiles[j];
             render_tile(tile, offset);
         }
     }
@@ -133,8 +172,14 @@ MovingPlatform** moving_platforms_near(MovingPlatforms* plt, Vector2 position) {
 
     for (int i = 0; i < Vec_length(plt->platforms); ++i) {
         MovingPlatform* platform = &plt->platforms[i];
+        Vector2 mid_point = {
+            .x = platform->start_position.x + ((platform->end_position.x + platform->size.x) - platform->start_position.x) / 2,
+            .y = platform->start_position.y + (platform->end_position.y - platform->start_position.y) / 2,
+        };
         float r = sqrtf(powf(platform->end_position.x - platform->start_position.x, 2) + powf(platform->end_position.y - platform->start_position.y, 2));
-        float dist = sqrtf(powf(position.x - platform->start_position.x, 2) + powf(position.y - platform->start_position.y, 2));
+        float extra = maxf(platform->size.x, platform->size.y);
+        if (r < extra) r += extra;
+        float dist = sqrtf(powf(position.x - mid_point.x, 2) + powf(position.y - mid_point.y, 2));
         if (dist < r) {
             Vec_push(plt->near_platforms, platform); // NOLINT
         }

@@ -8,6 +8,7 @@
 typedef struct {
     Vector2 start_position;
     Vector2 end_position;
+    Vector2 size;
     Vector2 velocity;
     float speed;
     Vec(Tile*) tiles;

@@ -13,7 +13,6 @@
 #define ALERT_BOX_HEIGHT (150)
 
 extern Font font;
-
 const Rectangle alert_box = {
     .x = ((float)WIDTH / 2) - ((float)ALERT_BOX_WIDTH / 2),
     .y = ((float)HEIGHT / 2) - ((float)ALERT_BOX_HEIGHT / 2),
@@ -152,6 +151,16 @@ void editor_handle_events(EditorState* state) {
         tile_pos.y = tile_pos.y - rem - TILE_SIZE;
     }
 
+    if (state->mode == Editing) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
+            add_tile(state, tile_pos);
+        }
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
+            remove_tile(state, tile_pos);
+        }
+    }
+
     if (state->mode == Selection && !stop_click_propagation) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
             add_selection(state, tile_pos);
@@ -279,16 +288,6 @@ void editor_render(EditorState* state) {
 
     if (state->mode == SetupMovingPlatforms && state->moving_platform_state.step == 1) {
         render_possible_tile(state, RED);
-    }
-
-    if (state->mode == Editing) {
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
-            add_tile(state, mouse_tile_pos);
-        }
-
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && state->mouse_pos.y < HEIGHT - BOTTOM_BAR_HEIGHT) {
-            remove_tile(state, mouse_tile_pos);
-        }
     }
 
     if (state->mode == Selection) {

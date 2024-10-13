@@ -196,7 +196,7 @@ void handle_moving_platforms_collision(
             entity->position.x += platform->velocity.x;
             /* entity->position.y += platform->velocity.y; */
         }
-        printf("Collision: %d\n", collide_dir);
+        /* printf("Collision: %d\n", collide_dir); */
     }
 }
 

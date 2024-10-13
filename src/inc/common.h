@@ -25,4 +25,6 @@ float sin_ease_out(float t);
 float distf(float a, float b);
 Vector2 to_tile_space(Vector2 position);
 Rectangle rect_from_tile(Tile* tile);
+int int_in_array(int* array, size_t length, int value);
+int float_in_array(float* array, size_t length, float value);
 #endif // !COMMON_H

@@ -19,4 +19,10 @@ int min(int a, int b);
 int max(int a, int b);
 float lerpf(float t, float a, float b);
 Vector2 vec2(float x, float y);
+bool aroundf(float precision, float a, float b);
+float quadratic_ease_outf(float t);
+float sin_ease_out(float t);
+float distf(float a, float b);
+Vector2 to_tile_space(Vector2 position);
+Rectangle rect_from_tile(Tile* tile);
 #endif // !COMMON_H

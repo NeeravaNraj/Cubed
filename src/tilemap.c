@@ -54,11 +54,32 @@ void tilemap_add_tile(Tilemap* tm, Tile* tile) {
         tile_x, COORD_DELIM, tile_y
     );
     assert(printed == TOTAL - 1);
+#undef TOTAL
 
     tile->position.x = tile_x * TILE_SIZE;
     tile->position.y = tile_y * TILE_SIZE;
     hashmap_insert(&tm->map, key, tile);
+}
+
+Tile* tilemap_get_tile(Tilemap* tm, Vector2 position) {
+    int tile_x = position.x / TILE_SIZE;
+    int tile_y = position.y / TILE_SIZE;
+
+    size_t x_len = snprintf(NULL, 0, "%d", tile_x);
+    size_t y_len = snprintf(NULL, 0, "%d", tile_y);
+
+#define TOTAL (x_len + y_len + 2)
+    char* key = arena_alloc(TOTAL);
+    int printed = snprintf(
+        key, TOTAL,
+        "%d%c%d",
+        tile_x, COORD_DELIM, tile_y
+    );
+    assert(printed == TOTAL - 1);
 #undef TOTAL
+
+    const Entry* entry = hashmap_get(&tm->map, key);
+    return entry ? entry->value : NULL;
 }
 
 bool tilemap_remove_tile(Tilemap* tm, Vector2 position) {

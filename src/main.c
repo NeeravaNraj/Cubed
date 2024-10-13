@@ -11,11 +11,15 @@
 #include "inc/entities.h"
 #include "inc/ui/editor.h"
 #include "inc/entities/player.h"
+#include "inc/moving_platforms.h"
 
 float FRAME_RATE = 60;
 
-World world;
+Font font;
 Assets assets;
+
+World world;
+Player player;
 EditorState editor_state;
 
 void init(char* level_path) {
@@ -24,21 +28,23 @@ void init(char* level_path) {
         .zoom = 1,
         .offset = { .x = 0, .y = 0 },
         .target = {
-            .x =  -world.player.entity.position.x + (float)WIDTH / 2 - 250,
-            .y =  -world.player.entity.position.y + (float)HEIGHT / 2,
+            .x =  -player.entity.position.x + (float)WIDTH / 2 - 250,
+            .y =  -player.entity.position.y + (float)HEIGHT / 2,
         },
     };
     load_assets(&assets);
+    font = LoadFontEx("assets/font/main.ttf", 128, 0, 256);
     tilemap_init(&world.tilemap);
     offgrid_init(&world.offgrid_tiles);
+    moving_platforms_init(&world.moving_platforms);
+    player_init(&player);
     editor_init(&editor_state, &world);
-    player_init(&world.player);
 
     if (level_path != NULL) {
         read_level(level_path, &world);
     }
 
-    world.player.entity.position = world.spawn;
+    player.entity.position = world.spawn;
 }
 
 void handle_events(float dt) {
@@ -58,19 +64,19 @@ void handle_events(float dt) {
         editor_handle_events(&editor_state);
     } else {
         if (IsKeyDown(KEY_A)) {
-            world.player.movement[0] = true;
+            player.movement[0] = true;
         } else {
-            world.player.movement[0] = false;
+            player.movement[0] = false;
         }
 
         if (IsKeyDown(KEY_D)) {
-            world.player.movement[1] = true;
+            player.movement[1] = true;
         } else {
-            world.player.movement[1] = false;
+            player.movement[1] = false;
         }
 
         if (IsKeyPressed(KEY_SPACE)) {
-            player_jump(&world.player);
+            player_jump(&player);
         }
     }
 }
@@ -78,26 +84,29 @@ void handle_events(float dt) {
 void update(float dt) {
     float t = 0.1;
     if (!world.edit_mode) {
-        Entity* player = &world.player.entity;
-        player_update(player, &world.tilemap, world.camera.offset, dt);
-        world.camera.offset.x = lerpf(t, world.camera.offset.x, -player->position.x + (float)WIDTH / 2 - 250);
-        world.camera.offset.y = lerpf(t, world.camera.offset.y, -player->position.y + (float)HEIGHT / 2);
+        Entity* player_entity = &player.entity;
+        moving_platforms_update(&world.moving_platforms, dt);
+        player_update(&player, &world, world.camera.offset, dt);
+        world.camera.offset.x = lerpf(t, world.camera.offset.x, -player_entity->position.x + (float)WIDTH / 2 - 250);
+        world.camera.offset.y = lerpf(t, world.camera.offset.y, -player_entity->position.y + (float)HEIGHT / 2);
 
-        if (player->position.y >= TILE_SIZE * 30) {
-            player->position = world.spawn;
+        if (player_entity->position.y >= TILE_SIZE * 30) {
+            player_entity->position = world.spawn;
+            player_entity->position.y -= TILE_SIZE;
         }
     }
 }
 
 void render(float dt) {
-    int fps = GetFPS();
-    char buffer[20];
-    sprintf(buffer, "%d", fps); 
+    /* int fps = GetFPS(); */
+    /* char buffer[20]; */
+    /* sprintf(buffer, "%d", fps);  */
 
     if (!world.edit_mode) {
         tilemap_render(&world.tilemap, world.camera.offset);
+        moving_platforms_render(&world.moving_platforms, world.camera.offset);
         offgrid_render(&world.offgrid_tiles, world.camera.offset);
-        player_render(&world.player.entity, world.camera.offset);
+        player_render(&player, world.camera.offset);
     } else {
         editor_render(&editor_state);
     }
@@ -111,7 +120,7 @@ int main(int argc, char** argv) {
     InitWindow(WIDTH, HEIGHT, "Cubed");
     arena_init();
     init(level_path);
-
+    
     SetTargetFPS(FRAME_RATE);
     while (!WindowShouldClose()) {
         ClearBackground(SKY_COLOR);
@@ -126,6 +135,7 @@ int main(int argc, char** argv) {
     
     CloseWindow();
 
+    /* moving_platforms_deinit(&plt); */
     offgrid_deinit(&world.offgrid_tiles);
     arena_deinit();
     return 0;

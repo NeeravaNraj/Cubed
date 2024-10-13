@@ -1,5 +1,4 @@
 #include "../inc/raylib.h"
-#include "../inc/raymath.h"
 #include "../inc/common.h"
 #include <stdio.h>
 #include "../inc/entities/player.h"
@@ -20,8 +19,8 @@ typedef enum {
 } CollideDirection;
 
 float rotation = 0;
-void player_render(Entity* entity, Vector2 offset) {
-    Player* player = entity->implementor;
+void player_render(Player* player, Vector2 offset) {
+    Entity* entity = &player->entity;
     int border_offset = 10;
 
     Vector2 body;
@@ -87,80 +86,154 @@ Rectangle player_as_rect(Entity* entity) {
     return player_rect;
 }
 
-void player_update(Entity* entity, Tilemap* tm, Vector2 offset, float dt) {
-    Player* player = entity->implementor;
-    
+CollideDirection handle_axis_collision(
+    Player* player,
+    Rectangle player_rect,
+    Rectangle physics_rect,
+    int axis
+) {
+    Entity* entity = &player->entity;
+    CollideDirection collide_dir = None;
+    if (axis == 0) {
+        float x_overlap = minf(player_rect.x + player_rect.width, physics_rect.x + physics_rect.width) - maxf(player_rect.x, physics_rect.x);
+
+        if (x_overlap >= 0) {
+            if (player->movement[1]) {
+                player_rect.x -= x_overlap;
+            } else if (player->movement[0]) {
+                player_rect.x += x_overlap;
+            }
+        }
+        entity->position.x = player_rect.x;
+    } else {
+        float y_overlap = minf(player_rect.y + player_rect.height, physics_rect.y + physics_rect.height) - maxf(player_rect.y, physics_rect.y);
+        if (entity->velocity.y > 0) {
+            player_rect.y -= y_overlap;
+            collide_dir |= Down;
+        } else if (entity->velocity.y < 0) {
+            player_rect.y += y_overlap;
+            collide_dir |= Up;
+        }
+        entity->position.y = player_rect.y;
+    }
+
+    return collide_dir;
+}
+
+CollideDirection handle_tilemap_collision(Player* player, Tilemap* tm, Vector2 move_direction, int axis) {
+    Entity* entity = &player->entity;
+    CollideDirection collide_dir = None;
+
+    if (axis == 0) {
+        Rectangle player_rect = player_as_rect(entity);
+        Tile** tiles_around = tilemap_tiles_around(tm, entity->position);
+        for (int i = 0; i < 9; ++i) {
+            Tile* tile = tiles_around[i];
+            if (!tile) break;
+            Rectangle physics_rect = rect_from_tile(tile);
+            if (CheckCollisionRecs(player_rect, physics_rect)) {
+                collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
+            }
+        }
+    } else {
+        Rectangle player_rect = player_as_rect(entity);
+        Tile** tiles_around = tilemap_tiles_around(tm, entity->position);
+        for (int i = 0; i < 9; ++i) {
+            Tile* tile = tiles_around[i];
+            if (!tile) break;
+            Rectangle physics_rect = rect_from_tile(tile);
+
+            if (CheckCollisionRecs(player_rect, physics_rect)) {
+                collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
+            }
+        }
+    }
+
+    return collide_dir;
+}
+
+void handle_moving_platforms_collision(
+    Player* player,
+    MovingPlatforms* mplts,
+    Vector2 move_direction,
+    int axis
+) {
+    Entity* entity = &player->entity;
+    CollideDirection collide_dir = None;
+    Rectangle player_rect = player_as_rect(entity);
+
+    MovingPlatform** nearby_platforms = moving_platforms_near(mplts, entity->position);
+    for (int i = 0; i < Vec_length(nearby_platforms); ++i) {
+        MovingPlatform* platform = nearby_platforms[i];
+        if (axis == 1) {
+            for (int j = 0; j < Vec_length(platform->tiles); ++j) {
+                Tile* tile = platform->tiles[j];
+                if (!tile) break;
+                Rectangle physics_rect = rect_from_tile(tile);
+                if (CheckCollisionRecs(player_rect, physics_rect)) {
+                    collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
+                }
+            }
+        } else {
+           for (int j = 0; j < Vec_length(platform->tiles); ++j) {
+                Tile* tile = platform->tiles[j];
+                if (!tile) break;
+                Rectangle physics_rect = rect_from_tile(tile);
+                if (CheckCollisionRecs(player_rect, physics_rect)) {
+                    if (collide_dir == None) {
+                        handle_axis_collision(player, player_rect, physics_rect, axis);
+                    }
+                }
+            }
+        }
+        if ((collide_dir & Up) || (collide_dir & Down)) {
+            entity->velocity.y = 0;
+        }
+
+        if (collide_dir & Down) {
+            player->jump = 0;
+            player->move_speed = 4.5;
+            entity->position.x += platform->velocity.x;
+            /* entity->position.y += platform->velocity.y; */
+        }
+        printf("Collision: %d\n", collide_dir);
+    }
+}
+
+void player_update(Player* player, World* world, Vector2 offset, float dt) {
+    Entity* entity = &player->entity;
+    Tilemap* tm = &world->tilemap;
+    MovingPlatforms* mplts = &world->moving_platforms;
     CollideDirection collide_dir = None;
     Vector2 move_direction = {
         .x = player->movement[0] + entity->velocity.x,
         .y = player->movement[1] + entity->velocity.y,
     };
-    entity->position.x += (player->movement[1] - player->movement[0]) * player->move_speed;
 
-    Rectangle player_rect = player_as_rect(entity);
-    Tile** tiles_around = tilemap_tiles_around(tm, entity->position);
-    for (int i = 0; i < 9; ++i) {
-        Tile* tile = tiles_around[i];
-        if (!tile) break;
-        Rectangle physics_rect = {
-            .x = tile->position.x,
-            .y = tile->position.y,
-            .width = TILE_SIZE,
-            .height = TILE_SIZE,
-        };
-
-        if (CheckCollisionRecs(player_rect, physics_rect)) {
-            float x_overlap = minf(player_rect.x + player_rect.width, physics_rect.x + physics_rect.width) - maxf(player_rect.x, physics_rect.x);
-
-            if (x_overlap >= 0) {
-                if (player->movement[1]) {
-                    player_rect.x -= x_overlap;
-                } else if (player->movement[0]) {
-                    player_rect.x += x_overlap;
-                }
-            }
-            entity->position.x = player_rect.x;
-        }
-    }
-
+    entity->velocity.x = (player->movement[1] - player->movement[0]) * player->move_speed;
+    entity->position.x += entity->velocity.x;
+    /* player_render(player, offset); */
+    handle_tilemap_collision(player, tm, move_direction, 0);
+    /* player_render(player, offset); */
+    handle_moving_platforms_collision(player, mplts, move_direction, 0);
+    /* player_render(player, offset); */
     entity->position.y += entity->velocity.y;
-
-    player_rect = player_as_rect(entity);
-    tiles_around = tilemap_tiles_around(tm, entity->position);
-    for (int i = 0; i < 9; ++i) {
-        Tile* tile = tiles_around[i];
-        if (!tile) break;
-        Rectangle physics_rect = {
-            .x = tile->position.x,
-            .y = tile->position.y,
-            .width = TILE_SIZE,
-            .height = TILE_SIZE,
-        };
-
-        if (CheckCollisionRecs(player_rect, physics_rect)) {
-            float y_overlap = minf(player_rect.y + player_rect.height, physics_rect.y + physics_rect.height) - maxf(player_rect.y, physics_rect.y);
-
-            if (y_overlap >= 0) {
-                if (move_direction.y > 0) {
-                    player_rect.y -= y_overlap;
-                    collide_dir |= Down;
-                } else if (move_direction.y < 0) {
-                    player_rect.y += y_overlap;
-                    collide_dir |= Up;
-                }
-            }
-            entity->position.y = player_rect.y;
-        }
-    }
+    /* player_render(player, offset); */
+    collide_dir = handle_tilemap_collision(player, tm, move_direction, 1);
+    /* player_render(player, offset); */
+    handle_moving_platforms_collision(player, mplts, move_direction, 1);
+    /* player_render(player, offset); */
 
     entity->velocity.y = minf(TERMINAL_VELOCITY, entity->velocity.y + GRAVITY);
     if ((collide_dir & Up) || (collide_dir & Down)) {
         entity->velocity.y = 0;
     }
+
     if (collide_dir & Down) {
         player->jump = 0;
         player->move_speed = 4.5;
     }
+    /* player_render(player, offset); */
 }
 
 void player_init(Player* player) {

@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "../raylib.h"
+#include "../world.h"
 #include "../entities.h"
 
 typedef struct Player {
@@ -13,6 +14,6 @@ typedef struct Player {
 
 void player_init(Player* player);
 void player_jump(Player* player);
-void player_render(Entity* entity, Vector2 offset);
-void player_update(Entity* entity, Tilemap* tm, Vector2 offset, float dt);
+void player_render(Player* player, Vector2 offset);
+void player_update(Player* player, World* world, Vector2 offset, float dt);
 #endif // !PLAYER_H

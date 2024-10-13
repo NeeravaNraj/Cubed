@@ -1,7 +1,7 @@
-#include "../../inc/raylib.h"
-#include "../../inc/common.h"
-#include "../../inc/tiles.h"
-#include "../../inc/ui/editor.h"
+#include "../inc/raylib.h"
+#include "../inc/common.h"
+#include "../inc/tiles.h"
+#include "../inc/ui/editor.h"
 #include <stdint.h>
 #include <unistd.h>
 

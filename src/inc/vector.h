@@ -128,7 +128,7 @@ typedef struct Vec_t {
     if (vec) {                                                                 \
       Vec_elem_destructor elem_destructor__ = __Vec_get_destructor(vec);       \
       if (elem_destructor__) {                                                 \
-        for (size_t i_ = 0; i_ < Vec_length((vec)); ++i) {                     \
+        for (size_t i_ = 0; i_ < Vec_length((vec)); ++i_) {                    \
           elem_destructor__(&(vec)[i_]);                                       \
         }                                                                      \
       }                                                                        \

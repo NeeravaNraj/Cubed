@@ -1,5 +1,5 @@
-#include "../../inc/common.h"
-#include "../../inc/ui/editor.h"
+#include "../inc/common.h"
+#include "../inc/ui/editor.h"
 #include <unistd.h>
 #include <assert.h>
 

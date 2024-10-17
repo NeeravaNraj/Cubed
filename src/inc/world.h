@@ -21,6 +21,7 @@ typedef struct {
     bool edit_mode;
 } World;
 
-void load_assets(Assets* assets);
+void reset();
 Asset* get_asset(Tiles kind);
+void load_assets(Assets* assets);
 #endif // WORLD_H

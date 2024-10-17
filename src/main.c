@@ -13,7 +13,8 @@
 #include "inc/entities/player.h"
 #include "inc/moving_platforms.h"
 
-float FRAME_RATE = 60;
+float FRAME_RATE = 120;
+float ticks = 0;
 
 Font font;
 Assets assets;
@@ -44,7 +45,12 @@ void init(char* level_path) {
         read_level(level_path, &world);
     }
 
+    reset();
+}
+
+void reset() {
     player.entity.position = world.spawn;
+    player.entity.position.y -= TILE_SIZE;
 }
 
 void handle_events(float dt) {
@@ -91,8 +97,7 @@ void update(float dt) {
         world.camera.offset.y = lerpf(t, world.camera.offset.y, -player_entity->position.y + (float)HEIGHT / 2);
 
         if (player_entity->position.y >= TILE_SIZE * 30) {
-            player_entity->position = world.spawn;
-            player_entity->position.y -= TILE_SIZE;
+            reset();
         }
     }
 }
@@ -117,16 +122,23 @@ int main(int argc, char** argv) {
     char* level_path = NULL;
     if (argc > 1) level_path = argv[1];
 
+    float accumulator = 0;
     InitWindow(WIDTH, HEIGHT, "Cubed");
     arena_init();
     init(level_path);
-    
+ 
     SetTargetFPS(FRAME_RATE);
     while (!WindowShouldClose()) {
         ClearBackground(SKY_COLOR);
-        float dt = GetFrameTime();
+        float dt = minf(GetFrameTime(), 0.25);
         handle_events(dt);
-        update(dt);
+
+        accumulator += dt;
+        while (accumulator >= FIXED_UPDATE_MS) {
+            update(FIXED_UPDATE_MS);
+            accumulator -= FIXED_UPDATE_MS;
+        }
+
         BeginDrawing();
             draw_tile(SpawnPoint, 0, world.spawn, world.camera.offset);
             render(dt);

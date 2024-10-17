@@ -114,6 +114,7 @@ void add_moving_platform(EditorState* state) {
     MovingPlatforms* mplts = &state->world->moving_platforms;
     MovPltState mp_state = state->moving_platform_state;
     size_t index = moving_platforms_add(mplts, mp_state.startPos, mp_state.endPos, 0.07);
+    MovingPlatform* platform = &mplts->platforms[index];
 
     for (int i = 0; i < Vec_length(state->selected_tiles); ++i) {
         Vector2 point = state->selected_tiles[i];

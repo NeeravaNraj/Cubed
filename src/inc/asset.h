@@ -1,8 +1,9 @@
 #ifndef ASSET_H
 #define ASSET_H
-#include "./raylib.h"
+
 #include "tiles.h"
 #include <unistd.h>
+#include "./raylib/raylib.h"
 
 typedef struct {
     Texture2D* textures;

@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "../inc/raylib.h"
+#include "../inc/raylib/raylib.h"
 #include "../inc/common.h"
 #include "../inc/entities/player.h"
+
 #define PLAYER_COLOR ((Color) { .r = 255, .g = 130, .b = 100, .a = 255 })
 #define PLAYER_OUTLINE_COLOR ((Color) { .r = 200, .g = 115, .b = 70, .a = 255 })
 
@@ -23,8 +24,10 @@ typedef enum {
     Y,
 } CollideDirection;
 
+Vector2 prevState;
+
 float rotation = 0;
-void player_render(Player* player, Vector2 offset) {
+void player_render(Player* player, Vector2 offset, float lag) {
     Entity* entity = &player->entity;
     int border_offset = 10;
 
@@ -45,9 +48,14 @@ void player_render(Player* player, Vector2 offset) {
         .y = (body.y + border_offset) / 2,
     };
 
+    /* float x = lerpf(lag, prevState.x, entity->position.x); */
+    /* float y = lerpf(lag, prevState.y, entity->position.y); */
+
+    float x = entity->position.x;
+    float y = entity->position.y;
     Rectangle player_rect_out = {
-        .x = entity->position.x + offset.x + center_out.x,
-        .y = entity->position.y + offset.y + center_out.y,
+        .x = x + offset.x + center_out.x,
+        .y = y + offset.y + center_out.y,
         .width = entity->size.x,
         .height = entity->size.y
     };
@@ -252,6 +260,7 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
         .y = player->movement[1] + entity->velocity.y,
     };
 
+    prevState = entity->position;
     entity->velocity.x = (player->movement[1] - player->movement[0]) * player->move_speed * dt;
     entity->position.x += entity->velocity.x;
     collide_dir1 = handle_tilemap_collision(player, tm, move_direction, 0);

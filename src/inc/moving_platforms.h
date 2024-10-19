@@ -10,9 +10,9 @@ typedef struct {
     Vector2 end_position;
     Vector2 size;
     Vector2 velocity;
-    float speed;
     Vec(Tile*) tiles;
     Vec(Vector2) tile_start;
+    float speed;
 } MovingPlatform;
 
 typedef struct {

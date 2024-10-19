@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include "inc/tiles.h"
 #include "inc/common.h"
-#include "inc/raylib.h"
-#include "inc/raymath.h"
 #include "inc/vector.h"
+#include "inc/raylib/raylib.h"
+#include "inc/raylib/raymath.h"
 #include "inc/moving_platforms.h"
 
 
@@ -33,12 +33,7 @@ size_t moving_platforms_add(MovingPlatforms* plt, Vector2 start, Vector2 end, fl
     return length;
 }
 
-void moving_platforms_add_tile(MovingPlatforms* plt, size_t i, Tile* tile) {
-    MovingPlatform* platform = &plt->platforms[i];
-
-    Vec_push(platform->tiles, tile); // NOLINT
-    Vec_push(platform->tile_start, tile->position);
-
+void calculate_platform_size(MovingPlatform* platform) {
     const size_t total_tiles = Vec_length(platform->tiles);
     float table[total_tiles];
     int counter = 0;
@@ -61,6 +56,26 @@ void moving_platforms_add_tile(MovingPlatforms* plt, size_t i, Tile* tile) {
 
     platform->size.x = x_counts * TILE_SIZE;
     platform->size.y = y_counts * TILE_SIZE;
+}
+
+void offset_tile_to_start_position(MovingPlatform* platform, Tile* tile) {
+    size_t tile_count = Vec_length(platform->tiles);
+
+    if (tile_count > 0) {
+        Tile* first_tile = platform->tiles[0];
+    } else {
+    }
+}
+
+void moving_platforms_add_tile(MovingPlatforms* plt, size_t i, Tile* tile) {
+    MovingPlatform* platform = &plt->platforms[i];
+    /* Vector2 start_position = to_tile_space(platform->start_position); */
+    /* Vector2 position_difference = Vector2Subtract(tile->position, start_position); */
+    /* tile->position = Vector2Subtract(tile->position, position_difference); */
+    Vec_push(platform->tiles, tile); // NOLINT
+    Vec_push(platform->tile_start, tile->position);
+    
+    calculate_platform_size(platform);
 }
 
 void moving_platforms_update(MovingPlatforms* plt, float dt) {

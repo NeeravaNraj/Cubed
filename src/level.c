@@ -38,6 +38,10 @@ Headers level_header_reader(FILE* file) {
             header_reader_v1(file, &headers);
             break;
 
+        case 2:
+            header_reader_v2(file, &headers);
+            break;
+
         default:
             handle_err(true, NULL, "ERROR: Unknown version encountered.");
             break;
@@ -55,6 +59,10 @@ void level_tile_reader(FILE* file, Headers* headers, World* world) {
         case 1:
             tile_reader_v1(file, headers, world);
             break;
+
+        case 2:
+            tile_reader_v2(file, headers, world);
+            break;
     }
 }
 
@@ -67,6 +75,10 @@ Properties level_properties_reader(FILE* file, Headers* headers) {
 
         case 1:
             properties_reader_v1(file, &properties);
+            break;
+
+        case 2:
+            properties_reader_v2(file, &properties);
             break;
     }
 
@@ -81,6 +93,7 @@ void level_header_writer(FILE* file, World* world, size_t tile_count) {
         .end = world->end,
         .tile_length = tile_count,
         .offgrid_tile_length = Vec_length(world->offgrid_tiles.tiles),
+        .moving_platforms_length = Vec_length(world->moving_platforms.platforms),
     };
 
     size_t written = fwrite(&headers, sizeof(Headers), 1, file);
@@ -102,6 +115,31 @@ void level_tile_writer(FILE* file, World* world) {
         Tile* tile = world->offgrid_tiles.tiles[i];
         size_t written = fwrite(tile, sizeof(Tile), 1, file);
         handle_err(written != 1, NULL, "ERROR: Could not write 'Offgrid-Tile' properly to file.");
+    }
+    
+    size_t moving_platforms_count =  Vec_length(world->moving_platforms.platforms);
+    for (size_t i = 0; i < moving_platforms_count; ++i) {
+        MovingPlatform* platform = &world->moving_platforms.platforms[i];
+        size_t total_tiles = Vec_length(platform->tiles);
+
+        size_t written = fwrite(&platform->start_position, sizeof(platform->start_position), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.start_position' properly to file.");
+        written = fwrite(&platform->end_position, sizeof(platform->end_position), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.end_position' properly to file.");
+        written = fwrite(&platform->size, sizeof(platform->size), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.size' properly to file.");
+        written = fwrite(&platform->velocity, sizeof(platform->velocity), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.velocity' properly to file.");
+        written = fwrite(&platform->speed, sizeof(platform->speed), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.speed' properly to file.");
+        written = fwrite(&total_tiles, sizeof(size_t), 1, file);
+        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.tiles.length' properly to file.");
+
+        for (size_t j = 0; j < total_tiles; ++j) {
+            Tile* tile = platform->tiles[j];
+            written = fwrite(tile, sizeof(Tile), 1, file);
+            handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.Tile' properly to file.");
+        }
     }
 }
 

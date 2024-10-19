@@ -1,10 +1,11 @@
 #ifndef EDITOR_H
 #define EDITOR_H
-#include "../tiles.h"
-#include "../tilemap.h"
-#include "../raylib.h"
-#include "../world.h"
+
 #include <unistd.h>
+#include "../tiles.h"
+#include "../world.h"
+#include "../tilemap.h"
+#include "../raylib/raylib.h"
 
 #define BOTTOM_BAR_HEIGHT 100
 

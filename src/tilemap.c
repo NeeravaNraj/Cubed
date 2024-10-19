@@ -1,15 +1,15 @@
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <unistd.h>
-#include "inc/raylib.h"
-#include "inc/tilemap.h"
+#include "inc/tiles.h"
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/hashmap.h"
-#include "inc/tiles.h"
+#include "inc/tilemap.h"
+#include "inc/raylib/raylib.h"
 
 #define COORD_DELIM (',')
 

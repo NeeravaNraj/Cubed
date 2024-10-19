@@ -1,9 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../raylib.h"
 #include "../world.h"
 #include "../entities.h"
+#include "../raylib/raylib.h"
 
 typedef struct Player {
     Entity entity;
@@ -15,6 +15,6 @@ typedef struct Player {
 
 void player_init(Player* player);
 void player_jump(Player* player);
-void player_render(Player* player, Vector2 offset);
+void player_render(Player* player, Vector2 offset, float lag);
 void player_update(Player* player, World* world, Vector2 offset, float dt);
 #endif // !PLAYER_H

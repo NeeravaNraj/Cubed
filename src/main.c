@@ -2,19 +2,18 @@
 #include <unistd.h>
 #include "inc/arena.h"
 #include "inc/level.h"
-#include "inc/offgrid.h"
 #include "inc/tiles.h"
 #include "inc/world.h"
-#include "inc/raylib.h"
 #include "inc/common.h"
+#include "inc/offgrid.h"
 #include "inc/tilemap.h"
 #include "inc/entities.h"
 #include "inc/ui/editor.h"
+#include "inc/raylib/raylib.h"
 #include "inc/entities/player.h"
 #include "inc/moving_platforms.h"
 
-float FRAME_RATE = 120;
-float ticks = 0;
+float FRAME_RATE = 60;
 
 Font font;
 Assets assets;
@@ -96,13 +95,13 @@ void update(float dt) {
         world.camera.offset.x = lerpf(t, world.camera.offset.x, -player_entity->position.x + (float)WIDTH / 2 - 250);
         world.camera.offset.y = lerpf(t, world.camera.offset.y, -player_entity->position.y + (float)HEIGHT / 2);
 
-        if (player_entity->position.y >= TILE_SIZE * 30) {
+        if (player_entity->position.y >= TILE_SIZE * 20) {
             reset();
         }
     }
 }
 
-void render(float dt) {
+void render(float lag) {
     /* int fps = GetFPS(); */
     /* char buffer[20]; */
     /* sprintf(buffer, "%d", fps);  */
@@ -111,7 +110,9 @@ void render(float dt) {
         tilemap_render(&world.tilemap, world.camera.offset);
         moving_platforms_render(&world.moving_platforms, world.camera.offset);
         offgrid_render(&world.offgrid_tiles, world.camera.offset);
-        player_render(&player, world.camera.offset);
+        player_render(&player, world.camera.offset, lag);
+        /* world.camera.offset.x = lerpf(lag, world.camera.offset.x, -player.entity.position.x + (float)WIDTH / 2 - 250); */
+        /* world.camera.offset.y = lerpf(lag, world.camera.offset.y, -player.entity.position.y + (float)HEIGHT / 2); */
     } else {
         editor_render(&editor_state);
     }
@@ -139,15 +140,17 @@ int main(int argc, char** argv) {
             accumulator -= FIXED_UPDATE_MS;
         }
 
+        float lag = accumulator / FIXED_UPDATE_MS;
+
         BeginDrawing();
             draw_tile(SpawnPoint, 0, world.spawn, world.camera.offset);
-            render(dt);
+            render(lag);
         EndDrawing();
     }
     
     CloseWindow();
 
-    /* moving_platforms_deinit(&plt); */
+    moving_platforms_deinit(&world.moving_platforms);
     offgrid_deinit(&world.offgrid_tiles);
     arena_deinit();
     return 0;

@@ -13,6 +13,8 @@ void header_reader_v1(FILE* file, Headers* headers) {
 
     read = fread(&headers->offgrid_tile_length, sizeof(size_t), 1, file);
     handle_err(read != 1, NULL, "ERROR: Could not read 'Headers.offgrid_tile_length' properly from file.");
+
+    headers->moving_platforms_length = 0;
 }
 
 void tile_reader_v1(FILE* file, Headers* headers, World* world) {

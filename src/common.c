@@ -1,48 +1,57 @@
-#include "math.h"
-#include "inc/common.h"
-#include "inc/raylib.h"
 #include <math.h>
 #include <unistd.h>
+#include "inc/common.h"
+#include "inc/raylib/raylib.h"
 
-float minf(float a, float b) {
+inline float minf(float a, float b) {
     return a < b ? a : b;
 }
 
-float maxf(float a, float b) {
+inline float maxf(float a, float b) {
     return a > b ? a : b;
 }
 
-int min(int a, int b) {
+inline int min(int a, int b) {
     return a < b ? a : b;
 }
 
-int max(int a, int b) {
+inline int max(int a, int b) {
     return a > b ? a : b;
 }
 
 
-float lerpf(float t, float a, float b) {
+inline float lerpf(float t, float a, float b) {
     return (1 - t) * a + t * b;
 }
 
-Vector2 vec2(float x, float y) {
-    return (Vector2){ .x = x, .y = y};
-}
-
-float quadratic_ease_outf(float t) {
+inline float quadratic_ease_outf(float t) {
     return 1 - powf(1 - t, 2);
 }
 
-float sin_ease_out(float t) {
+inline float sin_ease_out(float t) {
     return sinf(t * PI / 2);
 }
 
-bool aroundf(float precision, float a, float b) {
+inline Vector2 vec2(float x, float y) {
+    return (Vector2){ .x = x, .y = y};
+}
+
+
+inline bool aroundf(float precision, float a, float b) {
     return fabsf(a - b) <= precision;
 }
 
-float distf(float a, float b) {
+inline float distf(float a, float b) {
     return fabs(b - a);
+}
+
+inline Rectangle rect_from_tile(Tile* tile) {
+    return (Rectangle){
+        .x = tile->position.x,
+        .y = tile->position.y,
+        .width = TILE_SIZE,
+        .height = TILE_SIZE,
+    };
 }
 
 Vector2 to_tile_space(Vector2 position) {
@@ -53,15 +62,6 @@ Vector2 to_tile_space(Vector2 position) {
     position.y = tile_y * TILE_SIZE;
 
     return position;
-}
-
-Rectangle rect_from_tile(Tile* tile) {
-    return (Rectangle){
-        .x = tile->position.x,
-        .y = tile->position.y,
-        .width = TILE_SIZE,
-        .height = TILE_SIZE,
-    };
 }
 
 

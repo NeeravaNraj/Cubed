@@ -1,9 +1,9 @@
-#include "../inc/raylib.h"
-#include "../inc/common.h"
-#include "../inc/tiles.h"
-#include "../inc/ui/editor.h"
 #include <stdint.h>
 #include <unistd.h>
+#include "../inc/tiles.h"
+#include "../inc/common.h"
+#include "../inc/ui/editor.h"
+#include "../inc/raylib/raylib.h"
 
 #define PADDING 10
 #define ITEM_BOX_SIZE (BOTTOM_BAR_HEIGHT - PADDING * 2)

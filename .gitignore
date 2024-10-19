@@ -1,3 +1,4 @@
 build
-raylib*
 *.cdb
+raygui
+*.bak

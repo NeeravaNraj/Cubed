@@ -1,7 +1,7 @@
 #include "inc/tiles.h"
 #include "inc/common.h"
-#include "inc/raylib.h"
-#include "inc/raymath.h"
+#include "inc/raylib/raylib.h"
+#include "inc/raylib/raymath.h"
 
 #define GRASS_TOP_COLOR (0x329114ff)
 #define PLATFORM_TOP_COLOR (0x642d0aff)

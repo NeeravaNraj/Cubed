@@ -7,11 +7,11 @@
 
 #include "tiles.h"
 #include "world.h"
-#include "raylib.h"
 #include "tilemap.h"
+#include "raylib/raylib.h"
 
 #define MAGIC 0xB18B00B2
-#define VERSION 1
+#define VERSION 2
 
 
 typedef struct {
@@ -21,6 +21,7 @@ typedef struct {
     Vector2 end;
     size_t tile_length;
     size_t offgrid_tile_length;
+    size_t moving_platforms_length;
 } Headers;
 
 typedef struct {
@@ -44,4 +45,9 @@ void properties_reader_v0(FILE* file, Properties* properties);
 void header_reader_v1(FILE* file, Headers* headers);
 void tile_reader_v1(FILE* file, Headers* headers, World* world);
 void properties_reader_v1(FILE* file, Properties* properties);
+
+// ----   V2 READER   ----
+void header_reader_v2(FILE* file, Headers* headers);
+void tile_reader_v2(FILE* file, Headers* headers, World* world);
+void properties_reader_v2(FILE* file, Properties* properties);
 #endif // LEVEL_H

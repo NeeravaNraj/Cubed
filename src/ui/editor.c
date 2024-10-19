@@ -1,11 +1,11 @@
 #define RAYGUI_IMPLEMENTATION
-#include <stdio.h>
 
+#include <stdio.h>
 #include "../inc/level.h"
-#include "../inc/raylib.h"
-#include "../inc/raygui.h"
-#include "../inc/raymath.h"
 #include "../inc/ui/editor.h"
+#include "../inc/raylib/raygui.h"
+#include "../inc/raylib/raylib.h"
+#include "../inc/raylib/raymath.h"
 
 #define ROWS (HEIGHT / TILE_SIZE)
 #define COLS (WIDTH / TILE_SIZE)
@@ -116,10 +116,21 @@ void add_moving_platform(EditorState* state) {
     size_t index = moving_platforms_add(mplts, mp_state.startPos, mp_state.endPos, 0.07);
     MovingPlatform* platform = &mplts->platforms[index];
 
+    Vector2 prev_position;
     for (int i = 0; i < Vec_length(state->selected_tiles); ++i) {
         Vector2 point = state->selected_tiles[i];
         Tile* tile = tilemap_get_tile(&state->world->tilemap, point);
         assert(tile);
+
+        if (i > 0) {
+            Vector2 offset_diff = Vector2Subtract(tile->position, prev_position);
+            prev_position  = tile->position;
+            tile->position = Vector2Add(platform->start_position, offset_diff);
+        } else {
+            prev_position = tile->position;
+            tile->position = to_tile_space(platform->start_position);
+        }
+
         moving_platforms_add_tile(mplts, index, tile);
         tilemap_remove_tile(&state->world->tilemap, point);
     }

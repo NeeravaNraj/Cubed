@@ -1,8 +1,8 @@
-#include "inc/common.h"
-#include "inc/offgrid.h"
-#include "inc/raylib.h"
 #include "inc/tiles.h"
 #include "inc/vector.h"
+#include "inc/common.h"
+#include "inc/offgrid.h"
+#include "inc/raylib/raylib.h"
 
 void offgrid_init(OffgridTiles* off_tiles) {
     Vec_init(off_tiles->tiles, 8, NULL); // NOLINT

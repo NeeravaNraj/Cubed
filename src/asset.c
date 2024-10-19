@@ -1,10 +1,10 @@
+#include <stdint.h>
 #include "inc/asset.h"
 #include "inc/arena.h"
-#include "inc/common.h"
 #include "inc/tiles.h"
 #include "inc/world.h"
-#include "inc/raylib.h"
-#include <stdint.h>
+#include "inc/common.h"
+#include "inc/raylib/raylib.h"
 
 
 void load_grass(Assets* assets) {

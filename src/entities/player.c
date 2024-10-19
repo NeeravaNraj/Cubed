@@ -297,6 +297,24 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
     }
 }
 
+void player_handle_inputs(Player* player) {
+    if (IsKeyDown(KEY_A)) {
+        player->movement[0] = true;
+    } else {
+        player->movement[0] = false;
+    }
+
+    if (IsKeyDown(KEY_D)) {
+        player->movement[1] = true;
+    } else {
+        player->movement[1] = false;
+    }
+
+    if (IsKeyPressed(KEY_SPACE)) {
+        player_jump(player);
+    }
+}
+
 void player_fixed_update(Player* player) {
     Entity* entity = &player->entity;
 }

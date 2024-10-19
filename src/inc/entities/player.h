@@ -15,6 +15,7 @@ typedef struct Player {
 
 void player_init(Player* player);
 void player_jump(Player* player);
+void player_handle_inputs(Player* player);
 void player_render(Player* player, Vector2 offset, float lag);
 void player_update(Player* player, World* world, Vector2 offset, float dt);
 #endif // !PLAYER_H

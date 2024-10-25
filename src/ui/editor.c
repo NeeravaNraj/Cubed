@@ -116,6 +116,7 @@ void add_moving_platform(EditorState* state) {
     size_t index = moving_platforms_add(mplts, mp_state.startPos, mp_state.endPos, 0.07);
     MovingPlatform* platform = &mplts->platforms[index];
 
+    Vector2 prev_offset_position;
     Vector2 prev_position;
     for (int i = 0; i < Vec_length(state->selected_tiles); ++i) {
         Vector2 point = state->selected_tiles[i];
@@ -123,25 +124,28 @@ void add_moving_platform(EditorState* state) {
         assert(tile);
 
         if (i > 0) {
-            Vector2 offset_diff = Vector2Subtract(tile->position, prev_position);
-            prev_position  = tile->position;
-            tile->position = Vector2Add(platform->start_position, offset_diff);
-        } else {
+            Vector2 offset_diff = Vector2Subtract(tile->position, prev_offset_position);
+            prev_offset_position  = tile->position;
+            tile->position = Vector2Add(prev_position, offset_diff);
             prev_position = tile->position;
+        } else {
+            prev_offset_position = tile->position;
             tile->position = to_tile_space(platform->start_position);
+            prev_position = tile->position;
         }
 
         moving_platforms_add_tile(mplts, index, tile);
         tilemap_remove_tile(&state->world->tilemap, point);
     }
 
+    printf("%f, %f\n", platform->size.x, platform->size.y);
     movpltstate_init(&state->moving_platform_state);
     Vec_clear(state->selected_tiles);
     state->mode = Selection;
 }
 
 Vector2 mouse_tile_pos;
-void editor_handle_events(EditorState* state) {
+void editor_handle_input(EditorState* state) {
     World* world = state->world;
     state->mouse_pos = GetMousePosition();
     bool stop_click_propagation = false;
@@ -226,6 +230,7 @@ void editor_handle_events(EditorState* state) {
         int tile_y = state->mouse_pos.y / TILE_SIZE;
         world->spawn.x = tile_x * TILE_SIZE - state->world->camera.offset.x;
         world->spawn.y = tile_y * TILE_SIZE - state->world->camera.offset.y;
+        reset();
     }
 }
 

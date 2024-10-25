@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include "../inc/level.h"
+#include "../inc/raylib/raylib.h"
+#include "../inc/raylib/raymath.h"
+
 
 void header_reader_v2(FILE* file, Headers* headers) {
     size_t read = fread(&headers->spawn, sizeof(Vector2), 1, file);
@@ -37,7 +40,7 @@ void tile_reader_v2(FILE* file, Headers* headers, World* world) {
         size_t platform_id = moving_platforms_add(&world->moving_platforms, vec2(0, 0), vec2(0, 0), 0);
         MovingPlatform* platform = &world->moving_platforms.platforms[platform_id];
         size_t total_tiles = 0;
-
+    
         size_t read = fread(&platform->start_position, sizeof(platform->start_position), 1, file);
         handle_err(read != 1, NULL, "ERROR: Could not read 'MovingPlatform.start_position' properly from file.");
         read = fread(&platform->end_position, sizeof(platform->end_position), 1, file);
@@ -50,11 +53,23 @@ void tile_reader_v2(FILE* file, Headers* headers, World* world) {
         handle_err(read != 1, NULL, "ERROR: Could not read 'MovingPlatform.speed' properly from file.");
         read = fread(&total_tiles, sizeof(size_t), 1, file);
         handle_err(read != 1, NULL, "ERROR: Could not read 'MovingPlatform.tiles.length' properly from file.");
-
+    
+        Vector2 prev_offset_position;
+        Vector2 prev_position;
         for (size_t j = 0; j < total_tiles; ++j) {
             Tile* tile = arena_alloc(sizeof(Tile));
             size_t read = fread(tile, sizeof(Tile), 1, file);
             handle_err(read != 1, NULL, "ERROR: Could not read 'MovingPlatform.Tile' properly from file.");
+            if (j > 0) {
+                Vector2 offset_diff = Vector2Subtract(tile->position, prev_offset_position);
+                prev_offset_position  = tile->position;
+                tile->position = Vector2Add(prev_position, offset_diff);
+                prev_position = tile->position;
+            } else {
+                prev_offset_position = tile->position;
+                tile->position = to_tile_space(platform->start_position);
+                prev_position = tile->position;
+            }
             moving_platforms_add_tile(&world->moving_platforms, platform_id, tile);
         }
     }

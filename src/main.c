@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
         float lag = accumulator / FIXED_UPDATE_MS;
 
         BeginDrawing();
-            draw_tile(SpawnPoint, 0, world.spawn, world.camera.offset);
             render(lag);
         EndDrawing();
     }
@@ -112,7 +111,7 @@ void update_camera() {
 
 void reset() {
     player.entity.position = world.spawn;
-    player.entity.position.y -= TILE_SIZE;
+    player.entity.position.y += TILE_SIZE - PLAYER_SIZE;
 }
 
 void handle_input() {
@@ -121,7 +120,7 @@ void handle_input() {
     }
 
     if (world.edit_mode) {
-        editor_handle_events(&editor_state);
+        editor_handle_input(&editor_state);
     } else {
         player_handle_inputs(&player);
     }
@@ -133,7 +132,7 @@ void update(float dt) {
         player_update(&player, &world, world.camera.offset, dt);
         update_camera();
 
-        if (player.entity.position.y >= TILE_SIZE * 20) {
+        if (player.entity.position.y >= TILE_SIZE * DEATH_HEIGHT) {
             reset();
         }
     }
@@ -147,5 +146,6 @@ void render(float lag) {
         player_render(&player, world.camera.offset, lag);
     } else {
         editor_render(&editor_state);
+        player_render(&player, world.camera.offset, lag);
     }
 }

@@ -5,6 +5,8 @@
 #include "../entities.h"
 #include "../raylib/raylib.h"
 
+#define PLAYER_SIZE 40
+
 typedef struct Player {
     Entity entity;
     char jump;

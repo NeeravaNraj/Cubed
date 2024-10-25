@@ -9,6 +9,7 @@
 #define HEIGHT 720
 #define TILE_SIZE 48
 #define TEXTURE_SIZE 32
+#define DEATH_HEIGHT 20
 #define FIXED_UPDATE_MS 0.02
 
 extern Assets assets;
@@ -33,6 +34,8 @@ Vector2 vec2(float x, float y);
 Rectangle rect_from_tile(Tile* tile);
 Vector2 to_tile_space(Vector2 position);
 
+float get_rect_overlap_vert(Rectangle a, Rectangle b);
+float get_rect_overlap_hor(Rectangle a, Rectangle b);
 int int_in_array(int* array, size_t length, int value);
 int float_in_array(float* array, size_t length, float value);
 #endif // !COMMON_H

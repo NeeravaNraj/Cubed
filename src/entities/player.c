@@ -6,7 +6,6 @@
 #define PLAYER_COLOR ((Color) { .r = 255, .g = 130, .b = 100, .a = 255 })
 #define PLAYER_OUTLINE_COLOR ((Color) { .r = 200, .g = 115, .b = 70, .a = 255 })
 
-#define PLAYER_SIZE 40
 #define MAX_JUMPS (2)
 #define MOVE_SPEED 325
 #define GRAVITY (28.0)
@@ -104,7 +103,7 @@ CollideDirection handle_axis_collision(
     Entity* entity = &player->entity;
     CollideDirection collide_dir = None;
     if (axis == 0) {
-        float x_overlap = minf(player_rect.x + player_rect.width, physics_rect.x + physics_rect.width) - maxf(player_rect.x, physics_rect.x);
+        float x_overlap = get_rect_overlap_hor(player_rect, physics_rect);
 
         if (x_overlap >= 0) {
             if (player->movement[1]) {
@@ -119,7 +118,7 @@ CollideDirection handle_axis_collision(
         }
         entity->position.x = player_rect.x;
     } else {
-        float y_overlap = minf(player_rect.y + player_rect.height, physics_rect.y + physics_rect.height) - maxf(player_rect.y, physics_rect.y);
+        float y_overlap = get_rect_overlap_vert(player_rect, physics_rect);
         if (entity->velocity.y > 0) {
             player_rect.y -= y_overlap;
             collide_dir = Down;
@@ -175,34 +174,43 @@ CollideDirection handle_moving_platforms_collision(
 ) {
     Entity* entity = &player->entity;
     CollideDirection collide_dir = None;
-    Rectangle player_rect = player_as_rect(entity);
 
+    if (axis == 0 && player->attached_platform) {
+        entity->position.x += player->attached_platform->velocity.x;
+    }
+
+    if (axis == 1 && player->attached_platform) {
+        entity->position.y += player->attached_platform->velocity.y;
+    }
+
+    Rectangle player_rect = player_as_rect(entity);
     MovingPlatform** nearby_platforms = moving_platforms_near(mplts, entity->position);
     for (int i = 0; i < Vec_length(nearby_platforms); ++i) {
         MovingPlatform* platform = nearby_platforms[i];
         if (axis == 1) {
             for (int j = 0; j < Vec_length(platform->tiles); ++j) {
                 Tile* tile = platform->tiles[j];
-                if (!tile) break;
+                if (!tile) continue;
                 Rectangle physics_rect = rect_from_tile(tile);
                 if (CheckCollisionRecs(player_rect, physics_rect)) {
                     if (player->attached_platform) {
-                        entity->position.y = tile->position.y - player_rect.height;
+                        entity->position.y = tile->position.y - PLAYER_SIZE;
                         collide_dir = Down;
                     } else {
                         collide_dir = handle_axis_collision(player, player_rect, physics_rect, axis);
                     }
+                    break;
                 }
             }
         } else {
            for (int j = 0; j < Vec_length(platform->tiles); ++j) {
                 Tile* tile = platform->tiles[j];
-                if (!tile) break;
+                if (!tile) continue;
                 Rectangle physics_rect = rect_from_tile(tile);
+                float player_center = player_rect.y + player_rect.height / 2;
                 if (CheckCollisionRecs(player_rect, physics_rect)) {
-                    if (player->attached_platform != platform) {
-                        float x_overlap = minf(player_rect.x + player_rect.width, physics_rect.x + physics_rect.width) - maxf(player_rect.x, physics_rect.x);
-
+                    if (player_center > physics_rect.y) {
+                        float x_overlap = get_rect_overlap_hor(player_rect, physics_rect);
                         float platform_move_direction = platform->velocity.x >= 0 ? 1 : -1;
                         if (x_overlap >= 0) {
                             if (player->movement[1]) {
@@ -211,23 +219,16 @@ CollideDirection handle_moving_platforms_collision(
                             } else if (player->movement[0]) {
                                 player_rect.x += x_overlap;
                                 collide_dir = Left;
-                            } else {
+                            } else if (!player->attached_platform) {
                                 player_rect.x += (x_overlap + 0.2) * platform_move_direction;
                                 collide_dir = platform_move_direction == 1 ? Left : Right;
                             }
                         }
                         entity->position.x = player_rect.x;
+                        break;
                     }
                 }
             }
-        }
-
-        if (axis == 0 && player->attached_platform == platform) {
-            entity->position.x += platform->velocity.x;
-        }
-
-        if (axis == 1 && player->attached_platform == platform) {
-            if (platform->velocity.y > 0) entity->position.y += platform->velocity.y;
         }
 
         if ((collide_dir == Up) || (collide_dir == Down)) {
@@ -238,11 +239,6 @@ CollideDirection handle_moving_platforms_collision(
             player->jump = 0;
             player->move_speed = MOVE_SPEED;
             player->attached_platform = platform;
-        }
-
-        if (axis == 1 && player->attached_platform && collide_dir != Down) {
-            entity->velocity.y = GRAVITY;
-            player->attached_platform = NULL;
         }
     }
 
@@ -272,6 +268,7 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
     }
 
     entity->position.y += entity->velocity.y * dt;
+
     collide_dir1 = handle_tilemap_collision(player, tm, move_direction, 1);
     handle_moving_platforms_collision(player, mplts, move_direction, 1);
 
@@ -287,11 +284,8 @@ void player_update(Player* player, World* world, Vector2 offset, float dt) {
     }
 
     if (player->jump == MAX_JUMPS) {
-        if (player->movement[0]) {
-            rotation -= PI * 4;
-        } else {
-            rotation += PI * 4;
-        }
+        float direction = player->movement[0] ? -1 : 1;
+        rotation += PI * 4 *  direction;
     } else {
         rotation = 0;
     }
@@ -313,10 +307,6 @@ void player_handle_inputs(Player* player) {
     if (IsKeyPressed(KEY_SPACE)) {
         player_jump(player);
     }
-}
-
-void player_fixed_update(Player* player) {
-    Entity* entity = &player->entity;
 }
 
 void player_init(Player* player) {

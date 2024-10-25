@@ -157,7 +157,7 @@ void moving_platforms_render(MovingPlatforms* plt, Vector2 offset) {
         /* }; */
         /* float r = sqrtf(powf(platform->end_position.x - platform->start_position.x, 2) + powf(platform->end_position.y - platform->start_position.y, 2)); */
         /* float extra = maxf(platform->size.x, platform->size.y); */
-        /* if (r < extra) { r += extra; } */
+        /* r += extra; */
         /* Color color = RED; */
         /* color.a = 180; */
         /* DrawCircle(mid_point.x + offset.x, mid_point.y + offset.y, r, color); */
@@ -193,7 +193,7 @@ MovingPlatform** moving_platforms_near(MovingPlatforms* plt, Vector2 position) {
         };
         float r = sqrtf(powf(platform->end_position.x - platform->start_position.x, 2) + powf(platform->end_position.y - platform->start_position.y, 2));
         float extra = maxf(platform->size.x, platform->size.y);
-        if (r < extra) r += extra;
+        r += extra;
         float dist = sqrtf(powf(position.x - mid_point.x, 2) + powf(position.y - mid_point.y, 2));
         if (dist < r) {
             Vec_push(plt->near_platforms, platform); // NOLINT

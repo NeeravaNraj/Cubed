@@ -46,7 +46,7 @@ typedef struct {
 
 void editor_init(EditorState* state, World* world);
 void editor_render(EditorState* state);
-void editor_handle_events(EditorState* state);
+void editor_handle_input(EditorState* state);
 void editor_grid_render(EditorState* state);
 
 void tile_selector_render(EditorState* state);

@@ -82,8 +82,15 @@ void physics_add_boxcollider(RigidBody* rigid_body, BoxCollider* collider) {
         assert(false);
     }
 
+    b2Rot rotation = b2Body_GetRotation(rigid_body->body_id);
+    b2Vec2 position = b2Body_GetPosition(rigid_body->body_id);
+    position.x += collider->offset.x;
+    position.y += collider->offset.y;
+    b2Body_SetTransform(rigid_body->body_id, position, rotation);
+
     b2Polygon box = b2MakeBox(collider->half_size.x, collider->half_size.y);
     b2ShapeDef shape_def = b2DefaultShapeDef();
+    shape_def.userData = rigid_body->component.parent;
     shape_def.friction = rigid_body->friction;
     shape_def.isSensor = rigid_body->is_sensor;
     // TODO: configurable

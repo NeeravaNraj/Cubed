@@ -1,7 +1,10 @@
+#include <math.h>
+#include <stdio.h>
+#include <raylib.h>
 #include "inc/common.h"
 #include "inc/raylib/raylib.h"
-#include <math.h>
-#include <unistd.h>
+
+const float FIXED_UPDATE_MS = 1.0f / 60.0f;
 
 inline float minf(float a, float b) { return a < b ? a : b; }
 
@@ -24,15 +27,6 @@ inline bool aroundf(float precision, float a, float b) {
 }
 
 inline float distf(float a, float b) { return fabs(b - a); }
-
-inline Rectangle rect_from_tile(Tile *tile) {
-  return (Rectangle){
-      .x = tile->position.x,
-      .y = tile->position.y,
-      .width = TILE_SIZE,
-      .height = TILE_SIZE,
-  };
-}
 
 Vector2 to_tile_space(Vector2 position) {
   int tile_x = position.x / TILE_SIZE;
@@ -66,4 +60,40 @@ float get_rect_overlap_vert(Rectangle a, Rectangle b) {
 
 float get_rect_overlap_hor(Rectangle a, Rectangle b) {
   return minf(a.x + a.width, b.x + b.width) - maxf(a.x, b.x);
+}
+
+b2Vec2 to_b2vec2(Vector2 vec) {
+    return (b2Vec2) { vec.x, vec.y };
+}
+
+void print_vec2(Vector2 v) {
+    printf("(%f, %f)\n", v.x, v.y);
+}
+
+int signum(int value) {
+    return (0 < value) - (value < 0);
+}
+
+float signumf(float value) {
+    return (0 < value) - (value < 0);
+}
+
+Rectangle centered_rec(float width, float height) {
+    float screen_w = GetScreenWidth();
+    float screen_h = GetScreenHeight();
+
+    return (Rectangle){
+        .x = screen_w * 0.5 - width * 0.5,
+        .y = screen_h * 0.5 - height * 0.5,
+        .width = width,
+        .height = height,
+    };
+}
+
+b2Vec2 asb2vec2(Vector2 vec) {
+    return (b2Vec2){ .x = vec.x, .y = vec.y };
+}
+
+Vector2 asvec2(b2Vec2 vec) {
+    return (Vector2){ .x = vec.x, .y = vec.y };
 }

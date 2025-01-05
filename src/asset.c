@@ -1,67 +1,29 @@
 #include <stdint.h>
 #include "inc/asset.h"
 #include "inc/arena.h"
-#include "inc/tiles.h"
-#include "inc/world.h"
 #include "inc/common.h"
-#include "inc/raylib/raylib.h"
+#include "inc/hashmap.h"
+#include "inc/sprites.h"
 
+HashMap* assets = NULL;
 
-void load_grass(Assets* assets) {
-    Asset asset;
-    asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = OngridTile;
-    asset.kind = GrassPlatform;
-    asset.len = 9;
-
-    asset.textures[0] = LoadTexture("assets/tiles/grass.png");
-    assets->tile_assets.grass = asset;
+SpriteSheet* get_asset(const char* name) {
+    const Entry* entry = hashmap_get(assets, name);
+    return entry != NULL ? entry->value : NULL;
 }
 
-void load_stone(Assets* assets) {
-    Asset asset;
-    asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = OngridTile;
-    asset.kind = StonePlatform;
-    asset.len = 9;
+void load_assets() {
+    assets = arena_alloc(sizeof(HashMap));
+    SpriteSheet* grass_tiles = arena_alloc(sizeof(SpriteSheet));
+    SpriteSheet* stone_tiles = arena_alloc(sizeof(SpriteSheet));
+    SpriteSheet* small_decor = arena_alloc(sizeof(SpriteSheet));
+    hashmap_init(assets);
 
-    asset.textures[0] = LoadTexture("assets/tiles/stone.png");
-    assets->tile_assets.stone = asset;
-}
+    *grass_tiles = spritesheet_load("assets/tiles/grass.png", 9, TILE_SIZE, TILE_SIZE);
+    *stone_tiles = spritesheet_load("assets/tiles/stone.png", 9, TILE_SIZE, TILE_SIZE);
+    *small_decor = spritesheet_load("assets/decor/small_decor.png", 4, TILE_SIZE, TILE_SIZE);
 
-void load_small_decor(Assets* assets) {
-    Asset asset;
-    asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.asset_flags = OffgridTile;
-    asset.kind = SmallDecor;
-    asset.len = 4;
-
-    asset.textures[0] = LoadTexture("assets/decor/small_decor.png");
-
-    assets->decor_assets.small_decor = asset;
-}
-
-void load_menu(Assets* assets) {
-    Asset asset;
-    asset.textures = arena_alloc(sizeof(Texture2D));
-    asset.len = 1;
-
-    asset.textures[0] = LoadTexture("assets/menu.png");
-
-    assets->menu = asset;
-}
-
-void load_assets(Assets* assets) {
-    load_grass(assets);
-    load_stone(assets);
-    load_small_decor(assets);
-    load_menu(assets);
-}
-
-Asset* get_asset(Tiles kind) {
-    switch (kind) {
-        case StonePlatform: return &assets.tile_assets.stone;
-        case GrassPlatform: return &assets.tile_assets.grass;
-        default: return NULL;
-    }
+    hashmap_insert(assets, "grass_tiles", grass_tiles);
+    hashmap_insert(assets, "stone_tiles", stone_tiles);
+    hashmap_insert(assets, "small_decor", small_decor);
 }

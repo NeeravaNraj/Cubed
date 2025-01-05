@@ -1,8 +1,11 @@
 #ifndef TILES_H
 #define TILES_H
 
-#include "raylib.h"
 #include <stdint.h>
+
+#include "box2d/id.h"
+#include "raylib/raylib.h"
+#include "box2d/math_functions.h"
 
 typedef enum TileType {
     OngridTile = 1,
@@ -12,19 +15,12 @@ typedef enum TileType {
 typedef enum Tiles {
     GrassPlatform = 0,
     StonePlatform,
-    SmallDecor,
-    EndTile,
 
-    EndPoint,
-    SpawnPoint,
+    SmallDecor,
+
+    TilesEnd
 } Tiles;
 
-typedef struct Tile {
-    Tiles kind;
-    char variant;
-    Vector2 position;
-} Tile;
-
-void render_tile(Tile* tile, Vector2 offset);
-void draw_tile(Tiles kind, char variant, Vector2 position, Vector2 offset);
+void tile_create(Vector2 position, Tiles kind, char variant);
+Vector2 resolve_tile_position(Vector2 pos);
 #endif // !TILES_H

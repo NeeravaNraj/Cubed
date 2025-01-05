@@ -1,142 +1,114 @@
+#include <stdio.h>
+#include <assert.h>
 #include "inc/tiles.h"
+#include "inc/arena.h"
 #include "inc/common.h"
+#include "inc/asset.h"
+#include "inc/components/rigid_body.h"
+#include "inc/hashmap.h"
+#include "inc/physics.h"
+#include "inc/scene.h"
+#include "inc/sprites.h"
+#include "inc/game_object.h"
 #include "inc/raylib/raylib.h"
-#include "inc/raylib/raymath.h"
+#include "inc/components/sprite_renderer.h"
 
-#define GRASS_TOP_COLOR (0x329114ff)
-#define PLATFORM_TOP_COLOR (0x642d0aff)
-#define PLATFORM_COLOR (0xbf6950ff)
+#define COORD_DELIM (',')
 
-#define SPAWN_TOP_COLOR (0xafafafff)
-#define SPAWN_COLOR (0x4f4f4fff)
+HashMap* tilemap = NULL;
 
-
-void _render_tile(Texture2D asset, Vector2 position, char variant, Vector2 offset) {
-    Rectangle src = {
-        .x = variant * TEXTURE_SIZE,
-        .y = 0,
-        .width = TEXTURE_SIZE,
-        .height = TEXTURE_SIZE,
-    };
-    Rectangle dest = {
-        .x = position.x + offset.x,
-        .y = position.y + offset.y,
-        .height = TILE_SIZE,
-        .width = TILE_SIZE,
-    };
-    DrawTexturePro(asset, src, dest, (Vector2){.x = 0, .y = 0}, 0, WHITE);
-}
-
-void render_grass_platform(Vector2 position, char variant, Vector2 offset) {
-    Texture2D asset = assets.tile_assets.grass.textures[0];
-    _render_tile(asset, position, variant, offset);
-}
-
-void render_stone_platform(Vector2 position, char variant, Vector2 offset) {
-    Texture2D asset = assets.tile_assets.stone.textures[0];
-    _render_tile(asset, position, variant, offset);
-}
-
-void render_small_decor(Vector2 position, char variant, Vector2 offset) {
-    Texture2D asset = assets.decor_assets.small_decor.textures[0];
-    _render_tile(asset, position, variant, offset);
-}
-
-void render_end(Vector2 position, char variant, Vector2 offset) {
-    /* Texture2D asset = assets.end.textures[0]; */
-    /* Rectangle src = { */
-    /*     .x = 16, */
-    /*     .y = 0, */
-    /*     .width = 8, */
-    /*     .height = asset.height, */
-    /* }; */
-    /* Rectangle dest = { */
-    /*     .x = position.x + offset.x, */
-    /*     .y = position.y + offset.y, */
-    /*     .height = TILE_SIZE, */
-    /*     .width = TILE_SIZE, */
-    /* }; */
-    /* DrawTexturePro(asset, src, dest, (Vector2){.x = 0, .y = 0}, 0, WHITE); */
-}
-
-void render_spawn(Vector2 position, char variant, Vector2 offset) {
-    int flag_pole_height = TILE_SIZE * 3;
-    int flag_offset = 10;
-    DrawTriangle(
-        (Vector2) {
-            .x = position.x + offset.x + flag_offset,
-            .y = (position.y + offset.y) - (flag_pole_height - (float)TILE_SIZE / 2)
-        },
-        (Vector2) { 
-            .x = position.x + (float)TILE_SIZE / 2 + offset.x + flag_offset,
-            .y = (position.y + offset.y) - (flag_pole_height - (float)TILE_SIZE / 4)
-        },
-        (Vector2) { 
-            .x = position.x + offset.x + flag_offset,
-            .y = (position.y + offset.y) - flag_pole_height
-        },
-        RED
-    );
-
-    Vector2 flag_pos = position;
-    flag_pos.x  += flag_offset;
-    Vector2 top_pos = position;
-    top_pos.x += flag_offset;
-    top_pos.y -= flag_pole_height;
-    DrawLineEx(Vector2Add(flag_pos, offset), Vector2Add(top_pos, offset), 2, BLACK);
-}
-
-void render_tile(Tile* tile, Vector2 offset) {
-
-    switch (tile->kind) {
-        case StonePlatform:
-            render_stone_platform(tile->position, tile->variant, offset);
-            break;
-
-        case GrassPlatform:
-            render_grass_platform(tile->position, tile->variant, offset);
-            break;
-
-        case SpawnPoint:
-            render_spawn(tile->position, tile->variant, offset);
-            break;
-
-        case SmallDecor:
-            render_small_decor(tile->position, tile->variant, offset);
-            break;
-
-        case EndPoint:
-            render_end(tile->position, tile->variant, offset);
-            break;
-
-        case EndTile:
-            break;
-    }
-}
-
-void draw_tile(Tiles kind, char variant, Vector2 position, Vector2 offset) {
+Sprite tile_get_sprite(Tiles kind, char variant) {
     switch (kind) {
-        case StonePlatform:
-            render_stone_platform(position, variant, offset);
-            break;
+        case GrassPlatform: {
+            SpriteSheet* sheet = get_asset("grass_tiles");
+            return spritesheet_get_sprite(sheet, (int)variant);
+        }
+    
+        case StonePlatform: {
+            SpriteSheet* sheet = get_asset("stone_tiles");
+            return spritesheet_get_sprite(sheet, (int)variant);
+        }
 
-        case GrassPlatform:
-            render_grass_platform(position, variant, offset);
-            break;
+        case SmallDecor: {
+            SpriteSheet* sheet = get_asset("small_decor");
+            return spritesheet_get_sprite(sheet, (int)variant);
+        }
 
-        case SpawnPoint:
-            render_spawn(position, variant, offset);
-            break;
-
-        case SmallDecor:
-            render_small_decor(position, variant, offset);
-            break;
-
-        case EndPoint:
-            render_end(position, variant, offset);
-            break;
-
-        case EndTile:
+        default:
+            printf("ERROR: Unknown tile kind %d\n", kind);
+            assert(0);
             break;
     }
+}
+
+const char* tile_get_key(Vector2 position) {
+    int tile_x = position.x / TILE_SIZE;
+    int tile_y = position.y / TILE_SIZE;
+    size_t x_len = snprintf(NULL, 0, "%d", tile_x);
+    size_t y_len = snprintf(NULL, 0, "%d", tile_y);
+    int total = x_len + y_len + 2;
+    char* key = arena_alloc(total);
+    int printed = snprintf(
+        key, total,
+        "%d%c%d",
+        tile_x, COORD_DELIM, tile_y
+    );
+    assert(printed == total- 1);
+
+    return key;
+}
+
+bool tile_exists(Vector2 position) {
+    int tile_x = position.x / TILE_SIZE;
+    int tile_y = position.y / TILE_SIZE;
+    char buffer[24] = {0};
+    int to_print = snprintf(
+        buffer, sizeof(buffer), "%d%c%d",
+        tile_x, COORD_DELIM, tile_y 
+    );
+    assert(to_print < 24 || to_print == 0);
+
+    return hashmap_get(tilemap, buffer) != NULL;
+}
+
+void tile_create(Vector2 position, Tiles kind, char variant) {
+    if (tilemap == NULL) {
+        tilemap = arena_alloc(sizeof(HashMap));
+        hashmap_init(tilemap);
+    }
+
+    Vector2 tile_coords = to_tile_space(position);
+    if (tile_exists(tile_coords)) return;
+
+    Sprite sprite = tile_get_sprite(kind, variant);
+    const char* key = tile_get_key(tile_coords);
+
+    GameObject* go = go_create();
+
+    go->transform.position = tile_coords;
+    go->transform.scale = vec2(TILE_SIZE, TILE_SIZE);
+    go->transform.rotation = 0;
+
+    SpriteRenderer* renderer = spriterenderer_create(go, sprite);
+    go_add_component(go, &renderer->component);
+
+    RigidBody* rigid_body = rigidbody_create(go);
+    go_add_component(go, &rigid_body->component);
+
+    hashmap_insert(tilemap, key, go);
+    scene_add_game_object(*go);
+}
+
+Vector2 resolve_tile_position(Vector2 pos) {
+     if (pos.x < 0 && (int)pos.x % TILE_SIZE != 0) {
+        int rem = (int)(pos.x) % TILE_SIZE;
+        pos.x = pos.x - rem - TILE_SIZE;
+    }
+
+    if (pos.y < 0 && (int)pos.y % TILE_SIZE != 0) {
+        int rem = (int)(pos.y) % TILE_SIZE;
+        pos.y = pos.y - rem - TILE_SIZE;
+    }
+
+    return pos;
 }

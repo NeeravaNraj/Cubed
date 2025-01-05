@@ -12,7 +12,7 @@ link: compile
 	@echo -----------
 	@echo Linking....
 	@echo -----------
-	$(LD) -fstack-protector-all -o $(BIN_DIR)/main.bin $(OBJ_FILES) -L ./libs -l:libraylib.a -lm
+	$(LD) -fstack-protector-all -o $(BIN_DIR)/main.bin $(OBJ_FILES) -L ./libs -l:libraylib.a -lm -l:libbox2d.a
 	@echo Done.
 
 compile: $(BUILD_DIR)

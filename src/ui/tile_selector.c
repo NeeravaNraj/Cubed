@@ -1,80 +1,96 @@
-#include <stdint.h>
-#include <unistd.h>
-#include "../inc/tiles.h"
+#include <stddef.h>
+#include "../inc/ui.h"
+#include "../inc/asset.h"
+#include "../inc/editor.h"
 #include "../inc/common.h"
-#include "../inc/ui/editor.h"
 #include "../inc/raylib/raylib.h"
+#include "../inc/raylib/raygui.h"
 
-#define PADDING 10
-#define ITEM_BOX_SIZE (BOTTOM_BAR_HEIGHT - PADDING * 2)
-/* #define THUMBNAIL_PADDING (ITEM_BOX_SIZE / TILE_SIZE + PADDING) */
-#define ITEM_BOX_BG ((Color) { .r = 200, .g = 200, .b = 200, .a = 255 })
-#define ITEM_BOX_BG_HOVER ((Color) { .r = 220, .g = 220, .b = 220, .a = 255 })
-#define ITEM_BOX_BG_SELECTED ((Color) { .r = 180, .g = 240, .b = 180, .a = 255 })
+Rectangle tileselector_bounds = {0};
+Vector2 tileselector_scroll = {0};
+Vector2 tileselector_content_size = {140, 320};
 
-const float THUMBNAIL_PADDING = (float)ITEM_BOX_SIZE - (float)TILE_SIZE;
+void tileselector_init() {
+    int width = GetScreenWidth();
+    int height = GetScreenHeight();
 
-
-Vector2 itemboxes[16];
-size_t item_count = 0;
-
-
-bool mouse_in_item_box(Vector2 mouse_pos, Vector2 box_pos) {
-    if (
-        mouse_pos.x >= box_pos.x &&
-        mouse_pos.x < box_pos.x + ITEM_BOX_SIZE &&
-        mouse_pos.y >= box_pos.y &&
-        mouse_pos.y < box_pos.y + ITEM_BOX_SIZE
-    ) return true;
-
-    return false;
+    tileselector_bounds.x = 0;
+    tileselector_bounds.y = height * 0.8;
+    tileselector_bounds.width = width;
+    tileselector_bounds.height = height * 0.2;
 }
 
-
-void tile_selector_handle_events(EditorState* state) {
+void tileselector_content(Vector2 position, Vector2 tileselector_scroll) {
+    char* asset_names[3] = {
+        "grass_tiles",
+        "stone_tiles",
+        "small_decor"
+    };
+    float padding = 16;
+    Rectangle src = { .x = 0, .y = 0 };
+    Rectangle dest = {
+        .x = position.x - TILE_SIZE * 2 + tileselector_scroll.x,
+        .y = position.y + padding + tileselector_scroll.y,
+        .width = TILE_SIZE * 2,
+        .height = TILE_SIZE * 2
+    };
+    Vector2 origin = {0};
     Vector2 mouse_pos = GetMousePosition();
-
-    for (int i = 0; i < item_count; ++i) {
-        if (
-            mouse_in_item_box(mouse_pos, itemboxes[i]) &&
-            IsMouseButtonPressed(MOUSE_BUTTON_LEFT)
-        ) {
-            state->selected_variant = i;
-            break;
+    for (int i = 0; i < 3; ++i) {
+        const Entry* asset_entry = hashmap_get(assets, asset_names[i]);
+        SpriteSheet* sheet = asset_entry->value;
+        for (int j = 0; j < sheet->count; ++j) {
+            Sprite sprite = spritesheet_get_sprite(sheet, j);
+            Texture2D tex = *sprite.texture;
+            src.x = (float)j * tex.width / sheet->count;
+            src.width = (float)tex.width / sheet->count;
+            src.height = tex.height;
+    
+            float x_offset = dest.width + padding;
+            float y_offset = 0;
+    
+            if (dest.x + x_offset + dest.width + padding >= position.x + tileselector_bounds.width) {
+                x_offset = 0;
+                y_offset = dest.height + padding;
+                dest.x = position.x + padding + tileselector_scroll.x;
+            }
+    
+            dest.x += x_offset;
+            dest.y += y_offset;
+            Rectangle border = dest;
+            border.x -= padding / 4;
+            border.y -= padding / 4;
+            border.height += padding * 0.5;
+            border.width += padding * 0.5;
+            bool in_tileselector_bounds = CheckCollisionPointRec(mouse_pos, border);
+            Color border_color = in_tileselector_bounds ? WHITE : GRAY;
+            border_color = editor_state.selected_tile == i && editor_state.selected_variant == j ? WHITE : GRAY;
+    
+            if (in_tileselector_bounds && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                editor_state.selected_tile = i;
+                editor_state.selected_variant = j;
+            }
+    
+            DrawRectangleRec(border, border_color);
+            DrawTexturePro(tex, src, dest, origin, 0, WHITE);
         }
     }
+
+    tileselector_content_size.x = tileselector_bounds.width - 20;
+    tileselector_content_size.y = ((dest.y + dest.height + padding) - (position.y)) - tileselector_scroll.y;
 }
 
+void tileselector_render() {
+    int width = GetScreenWidth();
+    int height = GetScreenHeight();
 
-void tile_selector_render(EditorState* state) {
-    Vector2 mouse_pos = GetMousePosition();
-    // Draw bottom bar
-    DrawRectangle(
-        0, HEIGHT - BOTTOM_BAR_HEIGHT,
-        WIDTH, BOTTOM_BAR_HEIGHT,
-        (Color){ .r = 125, .g = 125, .b = 125, .a = 125 }
-    );
+    tileselector_bounds.x = SIDEBAR_WIDTH;
+    tileselector_bounds.width = width - tileselector_bounds.x;
+    tileselector_bounds.height = TILESELECTOR_HEIGHT;
+    tileselector_bounds.y = height - tileselector_bounds.height;
+    GuiWindow(tileselector_bounds, tileselector_content_size, &tileselector_scroll, tileselector_content);
+}
 
-    Asset* asset =  get_asset(state->selected_tile);
-    item_count = asset->len;
-    for (char i = 0; i < asset->len; ++i) {
-        int x = i * ITEM_BOX_SIZE + PADDING * (i + 1);
-        int y = HEIGHT - BOTTOM_BAR_HEIGHT + PADDING;
-
-        Vector2 box_pos = { .x = x, .y = y, };
-        itemboxes[i] = box_pos;
-
-        Color color = mouse_in_item_box(mouse_pos, box_pos) ? ITEM_BOX_BG_HOVER : ITEM_BOX_BG;
-        DrawRectangleV(
-            box_pos,
-            (Vector2) { .x = ITEM_BOX_SIZE, .y = ITEM_BOX_SIZE, },
-            state->selected_variant == i ? ITEM_BOX_BG_SELECTED : color
-        );
-
-        draw_tile(
-            state->selected_tile, i,
-            (Vector2) { .x = x + THUMBNAIL_PADDING / 2, .y = y + THUMBNAIL_PADDING, },
-            (Vector2) {.x = 0, .y = 0}
-        );
-    }
+bool tileselector_hovered(Vector2 pos) {
+    return CheckCollisionPointRec(pos, tileselector_bounds);
 }

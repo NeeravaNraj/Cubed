@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "inc/level.h"
-#include "inc/hashmap.h"
-#include "inc/tilemap.h"
+#include "inc/box2d/id.h"
+#include "inc/common.h"
 #include "inc/tiles.h"
-#include "inc/vector.h"
-#include "inc/world.h"
+#include "inc/hashmap.h"
 
 
 void handle_err(bool cond, char* loc, char* message) {
@@ -17,7 +16,7 @@ void handle_err(bool cond, char* loc, char* message) {
     }
 }
 
-Headers level_header_reader(FILE* file) {
+Headers level_header_reader(FILE* file, LevelData* level) {
     Headers headers;
 
     size_t read = fread(&headers.magic, sizeof(int), 1, file);
@@ -31,15 +30,7 @@ Headers level_header_reader(FILE* file) {
     printf("CUBED_INFO: Attempting to read level file with version '%d'\n", headers.version);
     switch (headers.version) {
         case 0:
-            header_reader_v0(file, &headers);
-            break;
-
-        case 1:
-            header_reader_v1(file, &headers);
-            break;
-
-        case 2:
-            header_reader_v2(file, &headers);
+            header_reader_v0(file, &headers, level);
             break;
 
         default:
@@ -50,100 +41,64 @@ Headers level_header_reader(FILE* file) {
     return headers;
 }
 
-void level_tile_reader(FILE* file, Headers* headers, World* world) {
+void level_tile_reader(FILE* file, Headers* headers, LevelData* level) {
     switch (headers->version) {
         case 0:
-            tile_reader_v0(file, headers, world);
+            tile_reader_v0(file, headers, level);
             break;
 
-        case 1:
-            tile_reader_v1(file, headers, world);
-            break;
-
-        case 2:
-            tile_reader_v2(file, headers, world);
+        default:
+            handle_err(true, NULL, "ERROR: Unknown version encountered.");
             break;
     }
 }
 
-Properties level_properties_reader(FILE* file, Headers* headers) {
+Properties level_properties_reader(FILE* file, Headers* headers, LevelData* level) {
     Properties properties;
     switch (headers->version) {
         case 0:
-            properties_reader_v0(file, &properties);
+            properties_reader_v0(file, &properties, level);
             break;
 
-        case 1:
-            properties_reader_v1(file, &properties);
-            break;
-
-        case 2:
-            properties_reader_v2(file, &properties);
+        default:
+            handle_err(true, NULL, "ERROR: Unknown version encountered.");
             break;
     }
 
     return properties;
 }
 
-void level_header_writer(FILE* file, World* world, size_t tile_count) {
+void level_header_writer(FILE* file, size_t tile_count) {
     Headers headers = {
         .magic = MAGIC,
         .version = VERSION,
-        .spawn = world->spawn,
-        .end = world->end,
         .tile_length = tile_count,
-        .offgrid_tile_length = Vec_length(world->offgrid_tiles.tiles),
-        .moving_platforms_length = Vec_length(world->moving_platforms.platforms),
     };
 
-    size_t written = fwrite(&headers, sizeof(Headers), 1, file);
-    handle_err(written != 1, NULL, "ERROR: Could not write 'Headers' properly to file.");
+    size_t written = fwrite(&headers.magic, sizeof(int), 1, file);
+    handle_err(written != 1, NULL, "ERROR: Could not write 'Headers.magic' properly to file.");
+    written = fwrite(&headers.version, sizeof(int), 1, file);
+    handle_err(written != 1, NULL, "ERROR: Could not write 'Headers.version' properly to file.");
+    written = fwrite(&headers.tile_length, sizeof(size_t), 1, file);
+    handle_err(written != 1, NULL, "ERROR: Could not write 'Headers.tile_length' properly to file.");
 }
 
-void level_tile_writer(FILE* file, World* world) {
-    Entry* tile_entry;
-    HashMapIterator it;
-    hashmap_init_iterator(&it, &world->tilemap.map);
-    while ((tile_entry = hashmap_next_entry(&it))) {
-        Tile* tile = tile_entry->value;
-        size_t written = fwrite(tile, sizeof(Tile), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'Tile' properly to file.");
-    }
+/* void level_tile_writer(FILE* file, LevelData* level) { */
+/*     Entry* tile_entry; */
+/*     HashMapIterator it; */
+/*     hashmap_init_iterator(&it, &level->tilemap.map); */
+/*     while ((tile_entry = hashmap_next_entry(&it))) { */
+/*         Tile* tile = tile_entry->value; */
+/*         size_t written = fwrite(&tile->kind, sizeof(Tiles), 1, file); */
+/*         handle_err(written != 1, NULL, "ERROR: Could not write 'Tile.kind' properly to file."); */
+/*         written = fwrite(&tile->variant, sizeof(char), 1, file); */
+/*         handle_err(written != 1, NULL, "ERROR: Could not write 'Tile.variant' properly to file."); */
+/*         written = fwrite(&tile->position, sizeof(Vector2), 1, file); */
+/*         handle_err(written != 1, NULL, "ERROR: Could not write 'Tile.position' properly to file."); */
+/*     } */
+/* } */
 
-    size_t offgrid_tile_count = Vec_length(world->offgrid_tiles.tiles);
-    for (size_t i = 0; i < offgrid_tile_count; ++i) {
-        Tile* tile = world->offgrid_tiles.tiles[i];
-        size_t written = fwrite(tile, sizeof(Tile), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'Offgrid-Tile' properly to file.");
-    }
-    
-    size_t moving_platforms_count =  Vec_length(world->moving_platforms.platforms);
-    for (size_t i = 0; i < moving_platforms_count; ++i) {
-        MovingPlatform* platform = &world->moving_platforms.platforms[i];
-        size_t total_tiles = Vec_length(platform->tiles);
-
-        size_t written = fwrite(&platform->start_position, sizeof(platform->start_position), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.start_position' properly to file.");
-        written = fwrite(&platform->end_position, sizeof(platform->end_position), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.end_position' properly to file.");
-        written = fwrite(&platform->size, sizeof(platform->size), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.size' properly to file.");
-        written = fwrite(&platform->velocity, sizeof(platform->velocity), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.velocity' properly to file.");
-        written = fwrite(&platform->speed, sizeof(platform->speed), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.speed' properly to file.");
-        written = fwrite(&total_tiles, sizeof(size_t), 1, file);
-        handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.tiles.length' properly to file.");
-
-        for (size_t j = 0; j < total_tiles; ++j) {
-            Tile* tile = platform->tiles[j];
-            written = fwrite(tile, sizeof(Tile), 1, file);
-            handle_err(written != 1, NULL, "ERROR: Could not write 'MovingPlatform.Tile' properly to file.");
-        }
-    }
-}
-
-void level_properties_writer(FILE* file, char* name, size_t name_len) {
+void level_properties_writer(FILE* file, const char* name, size_t name_len) {
     Properties properties = {
         .level_name_len = name_len,
         .level_name = name,
@@ -155,36 +110,44 @@ void level_properties_writer(FILE* file, char* name, size_t name_len) {
     handle_err(written != name_len, NULL, "ERROR: Could not write 'Properties.level_name' properly to file.");
 }
 
-void write_level(char *name, World* world) {
+void write_level(const char *name, LevelData* level) {
     size_t name_len = strlen(name);
-    size_t tile_count = hashmap_len(&world->tilemap.map);
+    size_t tile_count = 0;
 
     char* filename = malloc(name_len + 5);
-    sprintf(filename, "%s.cdb", name); 
-    FILE* file = fopen(filename, "wb");
+    sprintf(filename, "%s%s", name, FILE_EXT); 
+
+    int path_len = sizeof(LEVELS_DIR"/") + name_len + 5;
+    char* path = malloc(path_len);
+    sprintf(path, "%s/%s", LEVELS_DIR, filename); 
+
+    FILE* file = fopen(path, "wb");
     handle_err(file == NULL, "write_level", "ERROR: Failed to write level file.");
 
-    level_header_writer(file, world, tile_count);
-    level_tile_writer(file, world);
+    level_header_writer(file, tile_count);
+    /* level_tile_writer(file, level); */
     level_properties_writer(file, name, name_len);
 
     fclose(file);
+    free(path);
     free(filename);
+    printf("CUBED_INFO: Level saved.\n");
 }
 
 
-void read_level(char *filename, World* world) {
-    FILE* file = fopen(filename, "rb");
+LevelData read_level(const char* path, b2WorldId world_id) {
+    FILE* file = fopen(path, "rb");
+    LevelData level = {0};
+
     handle_err(file == NULL, "read_level", "ERROR: Failed to read level file.");
 
-    Headers headers = level_header_reader(file);
-    world->spawn = headers.spawn;
-    world->end = headers.end;
-    level_tile_reader(file, &headers, world);
-    Properties properties = level_properties_reader(file, &headers);
+    Headers headers = level_header_reader(file, &level);
+    /* level_tile_reader(file, &headers, &level); */
+    Properties properties = level_properties_reader(file, &headers, &level);
+    level.level_name = properties.level_name;
 
     printf("Finished reading level: '%s'\n", properties.level_name);
 
-cleanup:
     fclose(file);
+    return level;
 }

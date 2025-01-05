@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "../inc/arena.h"
 #include "../inc/components/rigid_body.h"
+#include "../inc/components/box_collider.h"
 
 RigidBody* rigidbody_create(GameObject* go) {
     RigidBody* rb = arena_alloc(sizeof(RigidBody));
@@ -40,11 +42,19 @@ void rigidBody_update(Component* component, float dt) {
     GameObject* go = component->parent;
 
     if (!B2_ID_EQUALS(self->body_id, b2_nullBodyId)) {
+        b2Vec2 offset = {0};
+        Component* collider = NULL;
+
+        if ((collider = go_get_component(go, component_names[CubedBoxCollider])) != NULL) {
+            BoxCollider* c = collider->implementor;
+            offset = c->offset;
+        }
+
         b2Vec2 position = b2Body_GetPosition(self->body_id);
         b2Rot rotation = b2Body_GetRotation(self->body_id);
 
-        go->transform.position.x = position.x;
-        go->transform.position.y = position.y;
+        go->transform.position.x = position.x - offset.x;
+        go->transform.position.y = position.y - offset.y;
         go->transform.rotation =  b2Rot_GetAngle(rotation);
     }
 }

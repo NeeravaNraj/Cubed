@@ -4,13 +4,14 @@
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/asset.h"
-#include "inc/components/rigid_body.h"
+#include "inc/components/box_collider.h"
 #include "inc/hashmap.h"
 #include "inc/physics.h"
 #include "inc/scene.h"
 #include "inc/sprites.h"
 #include "inc/game_object.h"
 #include "inc/raylib/raylib.h"
+#include "inc/components/rigid_body.h"
 #include "inc/components/sprite_renderer.h"
 
 #define COORD_DELIM (',')
@@ -93,7 +94,16 @@ void tile_create(Vector2 position, Tiles kind, char variant) {
     go_add_component(go, &renderer->component);
 
     RigidBody* rigid_body = rigidbody_create(go);
+    rigid_body->friction = 0.1;
+    rigid_body->fixed_rotation = true;
     go_add_component(go, &rigid_body->component);
+
+    BoxCollider* box_collider = boxcollider_create(go);
+    box_collider->half_size.x = (float)TILE_SIZE / 2;
+    box_collider->half_size.y = (float)TILE_SIZE / 2;
+    go_add_component(go, &box_collider->component);
+
+    physics_add(go);
 
     hashmap_insert(tilemap, key, go);
     scene_add_game_object(*go);

@@ -4,13 +4,16 @@
 RigidBody* rigidbody_create(GameObject* go) {
     RigidBody* rb = arena_alloc(sizeof(RigidBody));
 
-    rb->component.name = "Cubed.RigidBody";
+    rb->component.name = component_names[CubedRigidBody];
 
     rb->component.parent = go;
     rb->component.implementor = rb;
     
     rb->body_id = b2_nullBodyId;
     rb->body_type = b2_staticBody;
+
+    rb->velocity.x = 0;
+    rb->velocity.y = 0;
 
     rb->mass = 0;
     rb->friction = 0;
@@ -24,8 +27,10 @@ RigidBody* rigidbody_create(GameObject* go) {
     rb->is_bullet= false;
     
     rb->component.init = NULL;
-    rb->component.update = rigidBody_update;
     rb->component.render = NULL;
+    rb->component.deinit = NULL;
+
+    rb->component.update = rigidBody_update;
 
     return rb;
 }
@@ -34,11 +39,7 @@ void rigidBody_update(Component* component, float dt) {
     RigidBody* self = component->implementor;
     GameObject* go = component->parent;
 
-    if (
-        self->body_id.index1 != b2_nullBodyId.index1 &&
-        self->body_id.world0 != b2_nullBodyId.world0 &&
-        self->body_id.revision != b2_nullBodyId.revision
-    ) {
+    if (!B2_ID_EQUALS(self->body_id, b2_nullBodyId)) {
         b2Vec2 position = b2Body_GetPosition(self->body_id);
         b2Rot rotation = b2Body_GetRotation(self->body_id);
 

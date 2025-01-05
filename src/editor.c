@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <assert.h>
+#include "inc/physics.h"
 #include "inc/ui.h"
 #include "inc/level.h"
 #include "inc/tiles.h"
@@ -27,9 +28,6 @@ float CAMERA_SPEED = 16;
 float resize_debounce = 0;
 Vector2 tile_hovering = {0};
 
-char buf[24];
-bool pass = false;
-
 void load_viewport();
 void reload_viewport();
 void handle_mouse();
@@ -47,6 +45,8 @@ void editor_init() {
     editor_state.popup = NoPopup;
     editor_state.level_name = NULL;
     editor_state.playing = false;
+
+    physics_init();
 
     load_viewport();
     tileselector_init();
@@ -80,9 +80,9 @@ void editor_update(float dt) {
 
     scene_update_gos(dt);
 
-    /* if (editor_state.playing) { */
-    /*     b2World_Step(editor_state.world_id, FIXED_UPDATE_MS, 4); */
-    /* } */
+    if (editor_state.playing) {
+        physics_update();
+    }
 }
 
 void editor_render() {

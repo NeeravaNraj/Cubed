@@ -3,6 +3,7 @@
 
 #include "box2d/id.h"
 #include "entity.h"
+#include "physics.h"
 #include "player.h"
 #include "tiles.h"
 #include "vector.h"

@@ -13,9 +13,10 @@ typedef struct {
     float timestep;
 } Physics;
 
-Physics physics_create();
-void physics_update(Physics* physics);
-void physics_add(Physics* physics, GameObject* go);
-void physics_remove(Physics* physics, GameObject* go);
-void physics_deinit(Physics* physics);
+void physics_init();
+void physics_update();
+void physics_deinit();
+
+void physics_add(GameObject* go);
+void physics_remove(GameObject* go);
 #endif // !PHYSICS_H

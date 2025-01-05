@@ -12,4 +12,11 @@ typedef struct Component {
     void (*deinit)(struct Component*);
 } Component;
 
+enum ComponentNames {
+    CubedSpriteRenderer = 0,
+    CubedRigidBody,
+    CubedBoxCollider,
+};
+
+extern const char* component_names[];
 #endif // !COMPONENT_H

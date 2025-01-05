@@ -8,7 +8,7 @@ void spriterenderer_render(Component* c);
 SpriteRenderer* spriterenderer_create(GameObject* go, Sprite sprite) {
     SpriteRenderer* r = arena_alloc(sizeof(SpriteRenderer));
 
-    r->component.name = "Cubed.SpriteRenderer";
+    r->component.name = component_names[CubedSpriteRenderer];
 
     r->sprite = sprite;
     r->tint = WHITE;

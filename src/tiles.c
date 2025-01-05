@@ -101,6 +101,8 @@ void tile_create(Vector2 position, Tiles kind, char variant) {
     BoxCollider* box_collider = boxcollider_create(go);
     box_collider->half_size.x = (float)TILE_SIZE / 2;
     box_collider->half_size.y = (float)TILE_SIZE / 2;
+    box_collider->offset.x = box_collider->half_size.x;
+    box_collider->offset.y = box_collider->half_size.y;
     go_add_component(go, &box_collider->component);
 
     physics_add(go);

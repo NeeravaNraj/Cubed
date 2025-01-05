@@ -38,7 +38,7 @@ void go_render(GameObject* go) {
 
 Component* go_get_component(GameObject* go, const char* name) {
     const Entry* entry = hashmap_get(&go->components, name);
-    return NULL;
+    return entry ? entry->value : NULL;
 }
 
 void go_add_component(GameObject* go, Component* c) {

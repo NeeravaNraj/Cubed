@@ -30,7 +30,7 @@ void go_render(GameObject* go) {
     hashmap_init_iterator(&it, &go->components);
     while ((entry = hashmap_next_entry(&it))) {
         Component* c = entry->value;
-        if (c->render!= NULL) {
+        if (c->render != NULL) {
             c->render(c);
         }
     }

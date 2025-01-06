@@ -6,7 +6,7 @@
 #include "./component.h"
 
 typedef struct {
-    int uid;
+    unsigned int uid;
     Transform2D transform;
     HashMap components;
 } GameObject;
@@ -15,6 +15,7 @@ typedef struct {
 GameObject* go_create();
 void go_update(GameObject*, float);
 void go_render(GameObject*);
+
 Component* go_get_component(GameObject*, const char* name);
 void go_add_component(GameObject*, Component*);
 void go_remove_component(GameObject*, const char* name);

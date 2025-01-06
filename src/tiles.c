@@ -4,14 +4,13 @@
 #include "inc/arena.h"
 #include "inc/common.h"
 #include "inc/asset.h"
-#include "inc/components/box_collider.h"
 #include "inc/hashmap.h"
 #include "inc/physics.h"
 #include "inc/scene.h"
-#include "inc/sprites.h"
 #include "inc/game_object.h"
 #include "inc/raylib/raylib.h"
 #include "inc/components/rigid_body.h"
+#include "inc/components/box_collider.h"
 #include "inc/components/sprite_renderer.h"
 
 #define COORD_DELIM (',')

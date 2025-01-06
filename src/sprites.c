@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "inc/sprites.h"
+#include "inc/common.h"
 #include "inc/raylib/raylib.h"
 
 SpriteSheet spritesheet_load(const char* filename, int count, int sprite_width, int sprite_height) {

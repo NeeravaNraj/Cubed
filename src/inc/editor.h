@@ -15,17 +15,24 @@ typedef enum {
     PopupsEnd
 } Popups;
 
+typedef enum {
+    Select = 1,
+    Create,
+    Delete,
+} CursorMode;
+
 struct EditorState {
     const char* level_name;
 
     char selected_variant;
     Tiles selected_tile;
 
-    RenderTexture2D viewport;
 
+    CursorMode cursor_mode;
     Popups popup;
-
     bool playing;
+
+    RenderTexture2D viewport;
     /* TileType selected_tile_type; */
 };
 extern struct EditorState editor_state;

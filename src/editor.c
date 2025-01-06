@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <assert.h>
-#include "inc/physics.h"
 #include "inc/ui.h"
 #include "inc/level.h"
 #include "inc/tiles.h"
@@ -11,10 +10,13 @@
 #include "inc/common.h"
 #include "inc/camera.h"
 #include "inc/editor.h"
+#include "inc/sprites.h"
 #include "inc/vector.h"
+#include "inc/physics.h"
 #include "inc/box2d/id.h"
 #include "inc/game_object.h"
 #include "inc/box2d/types.h"
+#include "inc/raylib/rlgl.h"
 #include "inc/box2d/box2d.h"
 #include "inc/raylib/raylib.h"
 #include "inc/raylib/raygui.h"
@@ -41,6 +43,7 @@ void editor_init() {
     float width = GetScreenWidth();
 
     editor_state.selected_tile = GrassPlatform;
+    editor_state.cursor_mode = Select;
     editor_state.selected_variant = 0;
     editor_state.popup = NoPopup;
     editor_state.level_name = NULL;
@@ -55,8 +58,23 @@ void editor_init() {
 
 void editor_handle_inputs() {
     handle_mouse();
+
     if (!editor_state.playing) {
         handle_camera_movement();
+    }
+
+    switch (GetKeyPressed()) {
+        case KEY_ONE:
+            editor_state.cursor_mode = Select;
+            break;
+
+        case KEY_TWO:
+            editor_state.cursor_mode = Create;
+            break;
+
+        case KEY_THREE:
+            editor_state.cursor_mode = Delete;
+            break;
     }
 }
 
@@ -85,7 +103,9 @@ void editor_update(float dt) {
     }
 }
 
+Scene editor_scene;
 void editor_render() {
+    scene_render_go_uids();
     BeginTextureMode(editor_state.viewport);
         ClearBackground(BLACK);
         BeginMode2D(camera);
@@ -97,7 +117,8 @@ void editor_render() {
 
     Texture2D viewport = editor_state.viewport.texture;
     DrawTexturePro(
-        viewport, 
+        /* editor_scene.uid_texture.texture,  */
+        viewport,
         (Rectangle){
             .x = 0, .y = viewport.height,
             .width = viewport.width,
@@ -149,16 +170,23 @@ void handle_mouse() {
     Vector2 mouse_position = GetMousePosition();
     bool in_viewport = is_mouse_in_viewport(mouse_position);
     mouse_position.x -= SIDEBAR_WIDTH;
-    mouse_position = GetScreenToWorld2D(mouse_position, camera);
-    Vector2 tile_pos = resolve_tile_position(mouse_position);
+    Vector2 world_mouse_position = GetScreenToWorld2D(mouse_position, camera);
+    Vector2 tile_pos = resolve_tile_position(world_mouse_position);
     tile_hovering = to_tile_space(tile_pos);
 
-    if (in_viewport && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        tile_create(
-            tile_hovering,
-            editor_state.selected_tile,
-            editor_state.selected_variant
-        );
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (in_viewport) {
+            if (editor_state.cursor_mode == Create) {
+                tile_create(
+                    tile_hovering,
+                    editor_state.selected_tile,
+                    editor_state.selected_variant
+                );
+            } else if (editor_state.cursor_mode == Select) {
+                scene_get_game_object_pixel(mouse_position.x, mouse_position.y);
+            } else if (editor_state.cursor_mode == Delete) {
+            }
+        }
     }
 
     if (in_viewport && IsKeyDown(KEY_P)) {
@@ -204,14 +232,17 @@ void handle_camera_movement() {
 }
 
 void load_viewport() {
-    float height = GetScreenHeight();
-    float width = GetScreenWidth();
-    editor_state.viewport = LoadRenderTexture(width - SIDEBAR_WIDTH, height - TILESELECTOR_HEIGHT);
+    float width = GetScreenWidth() - SIDEBAR_WIDTH;
+    float height = GetScreenHeight() - TILESELECTOR_HEIGHT;
+
+    editor_state.viewport = LoadRenderTexture(width, height);
+    editor_scene.uid_texture = LoadRenderTexture(width, height);
 }
 
 void reload_viewport() {
     if (resize_debounce > 0) return;
     UnloadRenderTexture(editor_state.viewport);
+    UnloadRenderTexture(editor_scene.uid_texture);
     load_viewport();
     resize_debounce = FIXED_UPDATE_MS * 4;
 }
@@ -256,13 +287,40 @@ void editor_free_level_name() {
 }
 
 void render_hovering_tile() {
-    DrawRectangleLinesEx(
-        (Rectangle){
+    if (editor_state.cursor_mode == Select) {
+        DrawRectangleLinesEx(
+            (Rectangle){
+                .x = tile_hovering.x,
+                .y = tile_hovering.y,
+                .width = TILE_SIZE, 
+                .height = TILE_SIZE,
+            }, 
+            Clamp(1 / camera.zoom, 1, 2),
+            WHITE
+        );
+    } else if (editor_state.cursor_mode == Create) {
+        Sprite sprite = tile_get_sprite(editor_state.selected_tile, editor_state.selected_variant);
+        Rectangle src = {
+            .x = sprite.x,
+            .y = sprite.y,
+            .width = sprite.w,
+            .height = sprite.h,
+        };
+        Rectangle dest = {
             .x = tile_hovering.x,
-            .y = tile_hovering.y,
-            .width = TILE_SIZE, .height = TILE_SIZE,
-        }, 
-        Clamp(1 / camera.zoom, 1, 2),
-        WHITE
-    );
+            .y = tile_hovering.y, 
+            .width = TILE_SIZE, 
+            .height = TILE_SIZE,
+        };
+
+        Color tint = WHITE;
+        tint.a -= 50;
+
+        DrawTexturePro(
+            *sprite.texture,
+            src, dest,
+            vec2(0, 0), 0,
+            tint
+        );
+    }
 }

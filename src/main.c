@@ -1,15 +1,15 @@
 #include <string.h>
 #include "inc/arena.h"
 #include "inc/level.h"
-#include "inc/window.h"
-#include "inc/scene.h"
-#include "inc/common.h"
 #include "inc/asset.h"
+#include "inc/scene.h"
+#include "inc/window.h"
+#include "inc/common.h"
+#include "inc/editor.h"
 #include "inc/raylib/raylib.h"
 #define RAYGUI_IMPLEMENTATION
 #include "inc/raylib/raygui.h"
 #include "inc/style_dark.h"
-#include "inc/editor.h"
 
 void init() {
     arena_init();

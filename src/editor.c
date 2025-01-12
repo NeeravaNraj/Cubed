@@ -47,6 +47,7 @@ void editor_init() {
     editor_state.selected_variant = 0;
     editor_state.popup = NoPopup;
     editor_state.level_name = NULL;
+    editor_state.selected_go = NULL;
     editor_state.playing = false;
 
     physics_init();
@@ -183,7 +184,13 @@ void handle_mouse() {
                     editor_state.selected_variant
                 );
             } else if (editor_state.cursor_mode == Select) {
-                scene_get_game_object_pixel(mouse_position.x, mouse_position.y);
+                GameObject* go = scene_get_game_object_pixel(
+                    mouse_position.x,
+                    mouse_position.y
+                );
+                if (go != NULL)  {
+                    editor_state.selected_go = go;
+                }
             } else if (editor_state.cursor_mode == Delete) {
             }
         }

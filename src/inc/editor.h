@@ -3,6 +3,7 @@
 
 #include "box2d/id.h"
 #include "entity.h"
+#include "game_object.h"
 #include "physics.h"
 #include "player.h"
 #include "tiles.h"
@@ -24,6 +25,7 @@ typedef enum {
 struct EditorState {
     const char* level_name;
 
+    GameObject* selected_go;
     char selected_variant;
     Tiles selected_tile;
 

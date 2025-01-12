@@ -44,7 +44,6 @@ GameObject* scene_get_game_object(int uid) {
 
 void scene_add_game_object(GameObject go) {
     go.uid = get_id(Vec_length(game_objects));
-    printf("Game object uid: %p\n", ColorToInt(GetColor(go.uid)));
     Vec_push(game_objects, go);
 }
 
@@ -56,16 +55,17 @@ void scene_remove_game_object(int uid) {
     }
 }
 
-void scene_get_game_object_pixel(int x, int y) {
+GameObject* scene_get_game_object_pixel(int x, int y) {
     const RenderTexture2D* rt = &scene->uid_texture;
     Image image = LoadImageFromTexture(rt->texture);
     Color c = GetImageColor(image, x, rt->texture.height - y);
     const char* name = rlGetPixelFormatName(rt->texture.format);
-    unsigned int pixel = ColorToInt(c);
-    printf("Color(%s): %p\n", name, pixel);
-    printf("%d, %d\n", x, y);
-    ExportImage(image, "image.png");
+    unsigned int uid = ColorToInt(c);
     UnloadImage(image);
+
+    GameObject* go = scene_get_game_object(uid);
+
+    return go;
 }
 
 

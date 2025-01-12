@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include "../inc/ui.h"
 #include "../inc/editor.h"
 #include "../inc/common.h"
@@ -36,6 +37,26 @@ void sidebar_drawcontent(Vector2 position, Vector2 scroll) {
         } else {
             save_level();
         }
+    }
+
+    if (editor_state.selected_go != NULL) {
+        GameObject* go = editor_state.selected_go;
+
+        Font font = GetFontDefault();
+        const char* gameobject_label_text = "Selected GameObject:";
+        Rectangle gameobject_label;
+        gameobject_label.x = save_level_button_pos.x;
+        gameobject_label.y = save_level_button_pos.y + 24 + padding * 2;
+        gameobject_label.width = strlen(gameobject_label_text) * 8;
+        gameobject_label.height = 24;
+        GuiLabel(gameobject_label, gameobject_label_text);
+
+        /* Rectangle spinner_bounds = gameobject_label; */
+        /* spinner_bounds.y += spinner_bounds.height + padding; */
+        /* spinner_bounds.height = 32; */
+        /* spinner_bounds.width = 100; */
+        /*  */
+        /* GuiSpinner(spinner_bounds, "X", &go->transform.position.x, INT_MIN, INT_MAX, true); */
     }
 }
 

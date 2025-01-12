@@ -21,9 +21,9 @@ const Vec(GameObject) get_game_objects();
 void set_current_scene(Scene* scene);
 
 GameObject* scene_get_game_object(int uid);
+GameObject* scene_get_game_object_pixel(int x, int y);
 void scene_add_game_object(GameObject go);
 void scene_remove_game_object(int uid);
-void scene_get_game_object_pixel(int x, int y);
 
 void scene_update_gos(float dt);
 void scene_render_gos();
